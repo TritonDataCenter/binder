@@ -25,6 +25,23 @@ include ./tools/mk/Makefile.node_deps.defs
 include ./tools/mk/Makefile.smf.defs
 
 #
+# Variables
+#
+
+# Mountain Gorilla-spec'd versioning.
+
+ROOT                    := $(shell pwd)
+RELEASE_TARBALL         := binder-pkg-$(STAMP).tar.bz2
+TMPDIR                  := /tmp/$(STAMP)
+
+
+#
+# Env vars
+#
+PATH	:= $(NODE_INSTALL)/bin:${PATH}
+
+
+#
 # Repo-specific targets
 #
 .PHONY: all
@@ -39,6 +56,36 @@ CLEAN_FILES += $(NODEUNIT) ./node_modules/nodeunit
 .PHONY: test
 test: $(NODEUNIT)
 	$(NODEUNIT) test/*.test.js 2>&1 | $(BUNYAN)
+
+.PHONY: release
+release: all docs $(SMF_MANIFESTS)
+	@echo "Building $(RELEASE_TARBALL)"
+	@mkdir -p $(TMPDIR)/root/opt/smartdc/binder
+	@mkdir -p $(TMPDIR)/site
+	@touch $(TMPDIR)/site/.do-not-delete-me
+	@mkdir -p $(TMPDIR)/root
+	@mkdir -p $(TMPDIR)/root/opt/smartdc/binder/ssl
+	@mkdir -p $(TMPDIR)/root/opt/smartdc/binder/etc
+	cp -r   $(ROOT)/build \
+		$(ROOT)/lib \
+		$(ROOT)/main.js \
+		$(ROOT)/node_modules \
+		$(ROOT)/package.json \
+		$(ROOT)/smf \
+		$(TMPDIR)/root/opt/smartdc/binder
+	(cd $(TMPDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root site)
+	@rm -rf $(TMPDIR)
+
+
+.PHONY: publish
+publish: release
+	@if [[ -z "$(BITS_DIR)" ]]; then \
+		@echo "error: 'BITS_DIR' must be set for 'publish' target"; \
+		exit 1; \
+	fi
+	mkdir -p $(BITS_DIR)/binder
+	cp $(ROOT)/$(RELEASE_TARBALL) $(BITS_DIR)/binder/$(RELEASE_TARBALL)
+
 
 include ./tools/mk/Makefile.deps
 include ./tools/mk/Makefile.node.targ
