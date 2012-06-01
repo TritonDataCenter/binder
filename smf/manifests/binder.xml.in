@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<!-- Copyright (c) 2012, Joyent, Inc. All rights reserved. -->
+<service_bundle type="manifest" name="smartdc-ca-castashsvc">
+    <service name="sds/application/binder" type="service" version="1">
+
+	<dependency name="network"
+		    grouping="require_all"
+		    restart_on="error"
+		    type="service">
+	    <service_fmri value="svc:/network/physical" />
+	</dependency>
+
+	<dependency name="filesystem"
+		    grouping="require_all"
+		    restart_on="error"
+		    type="service">
+	    <service_fmri value="svc:/system/filesystem/local" />
+	</dependency>
+
+	<dependency name="zookeeper"
+		    grouping="require_all"
+		    restart_on="error"
+		    type="service">
+	    <service_fmri value="svc:/application/zookeeper" />
+	</dependency>
+
+	<exec_method type="method"
+		     name="start"
+		     exec="node main.js &amp;"
+		     timeout_seconds="10">
+	    <method_context working_directory="/opt/manta/binder">
+                <method_credential user="nobody"
+                                   group="nobody"
+                                   privileges="basic,net_privaddr"/>
+                <method_environment>
+                    <envvar name="PATH"
+                            value="/opt/manta/binder/build/node/bin:/opt/local/bin:/usr/bin:/usr/sbin:/bin"/>
+                    <envvar name="LD_PRELOAD_32"
+                            value="/usr/lib/extendedFILE.so.1" />
+		</method_environment>
+            </method_context>
+	</exec_method>
+
+	<exec_method type="method"
+		     name="refresh"
+		     exec=":kill"
+		     timeout_seconds="10" />
+
+	<exec_method type="method"
+		     name="stop"
+		     exec=":kill"
+		     timeout_seconds="10" />
+
+	<instance name="default" enabled="true" />
+
+	<stability value='Unstable' />
+
+	<template>
+	    <common_name>
+		<loctext xml:lang="C">Joyent DNS-ZooKeeper Service</loctext>
+	    </common_name>
+	</template>
+
+    </service>
+</service_bundle>
