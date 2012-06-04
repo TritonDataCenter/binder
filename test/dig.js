@@ -106,7 +106,6 @@ function dig(name, type, options, callback) {
                 if (err)
                         return (callback(err));
 
-
                 return (callback(null, parseDig(stdout)));
         });
 }
