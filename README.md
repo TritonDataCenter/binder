@@ -6,7 +6,6 @@ Who: Trent Mick, Dave Pacheco
 Docs: <https://mo.joyent.com/docs/eng>
 Tickets/bugs: <https://devhub.joyent.com/jira/browse/TOOLS>
 
-
 # Overview
 
 This repo serves two purposes: (1) It defines the guidelines and best
