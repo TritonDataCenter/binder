@@ -22,7 +22,7 @@ var dig = helper.dig;
 var HOSTS = {
         'hostA': '192.168.0.2',
         'hostB': '192.168.0.3',
-        'hostC': '192.168.0.4',
+        'hostC': '192.168.0.4'
 };
 var LBS = {
         'lbA': '10.0.1.2',
