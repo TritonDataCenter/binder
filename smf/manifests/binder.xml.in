@@ -3,6 +3,8 @@
 <!-- Copyright (c) 2012, Joyent, Inc. All rights reserved. -->
 <service_bundle type="manifest" name="smartdc-ca-castashsvc">
     <service name="sds/application/binder" type="service" version="1">
+	<create_default_instance enabled="true" />
+	<single_instance />
 
 	<dependency name="network"
 		    grouping="require_all"
@@ -29,7 +31,7 @@
 		     name="start"
 		     exec="node main.js &amp;"
 		     timeout_seconds="10">
-	    <method_context working_directory="/opt/manta/binder">
+	    <method_context working_directory="/opt/smartdc/binder">
                 <method_credential user="nobody"
                                    group="nobody"
                                    privileges="basic,net_privaddr"/>
