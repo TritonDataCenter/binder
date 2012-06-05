@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
 <!-- Copyright (c) 2012, Joyent, Inc. All rights reserved. -->
-<service_bundle type="manifest" name="smartdc-ca-castashsvc">
+<service_bundle type="manifest" name="binder">
     <service name="sds/application/binder" type="service" version="1">
 	<create_default_instance enabled="true" />
 	<single_instance />
@@ -37,7 +37,7 @@
                                    privileges="basic,net_privaddr"/>
                 <method_environment>
                     <envvar name="PATH"
-                            value="/opt/manta/binder/build/node/bin:/opt/local/bin:/usr/bin:/usr/sbin:/bin"/>
+                            value="/opt/smartdc/binder/build/node/bin:/opt/local/bin:/usr/bin:/usr/sbin:/bin"/>
                     <envvar name="LD_PRELOAD_32"
                             value="/usr/lib/extendedFILE.so.1" />
 		</method_environment>
@@ -53,10 +53,6 @@
 		     name="stop"
 		     exec=":kill"
 		     timeout_seconds="10" />
-
-	<instance name="default" enabled="true" />
-
-	<stability value='Unstable' />
 
 	<template>
 	    <common_name>
