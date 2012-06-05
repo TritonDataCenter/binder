@@ -8,3 +8,4 @@ cscope.po.out
 cscope.out
 smf/manifests/*.xml
 *.tar.bz2
+core
