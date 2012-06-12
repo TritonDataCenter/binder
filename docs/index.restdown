@@ -39,10 +39,10 @@ look like this:
         type: 'service',
         service: {
             srvce: '_http',
-            proto: '_tcp',
-            ttl: 60,
+            proto: '_tcp'
             port: 80
-        }
+        },
+        ttl: 60
     }
 
 What binder does is treat the JSON payload like a C union. That is, the `type`
@@ -55,21 +55,23 @@ Each of those children will have a similar payload, but will be of either type
 "service" name, binder looks at all the children, and looks for records like:
 
     {
-	    type: 'load_balancer',
-		load_balancer: {
-	        address: 10.1.2.3
-	    }
-	}
+        type: 'load_balancer',
+        load_balancer: {
+            address: 10.1.2.3
+        },
+        ttl: 30
+    }
 
 It takes all the addresses, shuffles them, and returns a set of A records to the
 client.  For completeness sake, the host records look pretty much identical:
 
     {
-	    type: 'host',
-		host: {
-	        address: 10.1.2.3
-	    }
-	}
+        type: 'host',
+        host: {
+            address: 10.1.2.3
+        },
+        ttl: 20
+    }
 
 How load-balancing works is beyond the scope of this document (reference
 `muppet`).  Usually all of the host and LB records are "ephemeral" in ZK,
@@ -84,11 +86,11 @@ read `/com/joyent/foo/087d866d-b88a-4a78-80ec-750c26f6eccf` and (assuming it's
 a host) see:
 
     {
-	    type: 'host',
-		host: {
-	        address: 10.1.2.3
-	    }
-	}
+        type: 'host',
+        host: {
+            address: 10.1.2.3
+        }
+    }
 
 So it would do no further logic, and simply return an A record of with that IP.
 
@@ -106,11 +108,12 @@ ZK with the DNS record reversed.  As above `foo.joyent.com` should live at
 `/com/joyent/foo`.  The JSON payload at that path is very simple:
 
     {
-	    type: 'host',
-		host: {
-	        address: <your ip here>
-	    }
-	}
+        type: 'host',
+        host: {
+            address: <your ip here>
+        },
+        ttl: 30
+    }
 
 While binder doesn't care, these nodes are expected to be ephemeral. These
 nodes should be a leaf node.
@@ -122,11 +125,12 @@ is set differently, such that when a load_balancer is a child of a service
 entry, binder returns RR LB addresses:
 
     {
-	    type: load_balancer',
-		load_balancer: {
-	        address: <your ip here>
-	    }
-	}
+        type: 'load_balancer',
+        load_balancer: {
+            address: <your ip here>
+        },
+        ttl: 30
+    }
 
 While binder doesn't care, these nodes are expected to be ephemeral. These
 nodes should be a leaf node.
@@ -144,12 +148,37 @@ supported).
         service: {
             srvce: '_http',
             proto: '_tcp',
-            ttl: 60,
             port: 80
-        }
+        },
+        ttl: 60
     }
 
 These records should be persistent, and non-leaf nodes.
+
+## database
+
+A `database` record is intended to only be written by the postgres/manatee
+system.  It strongly assumes the record maps to a PG shard record that manatee
+uses, which means it _must_ be structured as an object with `primary`, `standby`
+and `async`, as either `pg://` or `tcp://` url, and the hostname must be an
+IP address (i.e., if you have `tcp://foo@db.example.com/pg`, bad things will
+happen).
+
+    {
+        type: 'database',
+        database: {
+            primary: 'tcp://user@192.168.0.1/postgres',
+            standby: 'tcp://user@192.168.0.2/postgres',
+            async: 'tcp://user@192.168.0.3/postgres'
+        },
+        ttl: 10
+    }
+
+While binder doesn't care, these nodes are expected to be persistent. It also
+doesn't matter if these are written as a leaf-node or not (i.e., binder doesn't
+try to do anything more once it sees type=database).  In most cases, each DB
+host will have an A record at hostA.db.example.com (e.g., as an immediate
+child).
 
 # Configuration
 

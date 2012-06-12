@@ -35,9 +35,9 @@ var SVC_VALUE = {
         service: {
                 srvce: '_http',
                 proto: '_tcp',
-                ttl: 60,
                 port: 80
-        }
+        },
+        ttl: 60
 };
 
 
