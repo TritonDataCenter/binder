@@ -29,14 +29,19 @@ SMF_MANIFESTS_IN = smf/manifests/binder.xml.in
 #
 
 NODE_PREBUILT_VERSION	:= v0.6.19
-RELEASE_TARBALL         := binder-pkg-$(STAMP).tar.bz2
-ROOT                    := $(shell pwd)
-TMPDIR                  := /tmp/$(STAMP)
 
 include ./tools/mk/Makefile.defs
 include ./tools/mk/Makefile.node_prebuilt.defs
 include ./tools/mk/Makefile.node_deps.defs
 include ./tools/mk/Makefile.smf.defs
+
+#
+# MG Variables
+#
+
+RELEASE_TARBALL         := binder-pkg-$(STAMP).tar.bz2
+ROOT                    := $(shell pwd)
+TMPDIR                  := /tmp/$(STAMP)
 
 #
 # Repo-specific targets
