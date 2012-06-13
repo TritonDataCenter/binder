@@ -9,6 +9,11 @@ BUNYAN		:= ./node_modules/.bin/bunyan
 NODEUNIT	:= ./node_modules/.bin/nodeunit
 
 #
+# Env vars
+#
+PATH	:= $(NODE_INSTALL)/bin:${PATH}
+
+#
 # Files
 #
 DOC_FILES	 = index.restdown
@@ -19,27 +24,19 @@ JSSTYLE_FILES	 = $(JS_FILES)
 JSSTYLE_FLAGS    = -f tools/jsstyle.conf
 SMF_MANIFESTS_IN = smf/manifests/binder.xml.in
 
-include ./tools/mk/Makefile.defs
-include ./tools/mk/Makefile.node.defs
-include ./tools/mk/Makefile.node_deps.defs
-include ./tools/mk/Makefile.smf.defs
-
 #
 # Variables
 #
 
-# Mountain Gorilla-spec'd versioning.
-
-ROOT                    := $(shell pwd)
+NODE_PREBUILT_VERSION	:= v0.6.19
 RELEASE_TARBALL         := binder-pkg-$(STAMP).tar.bz2
+ROOT                    := $(shell pwd)
 TMPDIR                  := /tmp/$(STAMP)
 
-
-#
-# Env vars
-#
-PATH	:= $(NODE_INSTALL)/bin:${PATH}
-
+include ./tools/mk/Makefile.defs
+include ./tools/mk/Makefile.node_prebuilt.defs
+include ./tools/mk/Makefile.node_deps.defs
+include ./tools/mk/Makefile.smf.defs
 
 #
 # Repo-specific targets
@@ -47,11 +44,12 @@ PATH	:= $(NODE_INSTALL)/bin:${PATH}
 .PHONY: all
 all: $(SMF_MANIFESTS) | $(NODEUNIT) $(REPO_DEPS)
 	$(NPM) rebuild
+	$(NPM) shrinkwrap
 
 $(NODEUNIT): | $(NPM_EXEC)
 	$(NPM) install
 
-CLEAN_FILES += $(NODEUNIT) ./node_modules/nodeunit
+CLEAN_FILES += $(NODEUNIT) ./node_modules/nodeunit npm-shrinkwrap.json
 
 .PHONY: test
 test: $(NODEUNIT)
@@ -64,7 +62,6 @@ release: all docs $(SMF_MANIFESTS)
 	@mkdir -p $(TMPDIR)/site
 	@touch $(TMPDIR)/site/.do-not-delete-me
 	@mkdir -p $(TMPDIR)/root
-	@mkdir -p $(TMPDIR)/root/opt/smartdc/binder/ssl
 	@mkdir -p $(TMPDIR)/root/opt/smartdc/binder/etc
 	cp -r   $(ROOT)/build \
 		$(ROOT)/lib \
@@ -88,7 +85,7 @@ publish: release
 
 
 include ./tools/mk/Makefile.deps
-include ./tools/mk/Makefile.node.targ
+include ./tools/mk/Makefile.node_prebuilt.targ
 include ./tools/mk/Makefile.node_deps.targ
 include ./tools/mk/Makefile.smf.targ
 include ./tools/mk/Makefile.targ
