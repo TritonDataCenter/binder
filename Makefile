@@ -9,11 +9,6 @@ BUNYAN		:= ./node_modules/.bin/bunyan
 NODEUNIT	:= ./node_modules/.bin/nodeunit
 
 #
-# Env vars
-#
-PATH	:= $(NODE_INSTALL)/bin:${PATH}
-
-#
 # Files
 #
 DOC_FILES	 = index.restdown
@@ -38,6 +33,11 @@ include ./tools/mk/Makefile.defs
 include ./tools/mk/Makefile.node_prebuilt.defs
 include ./tools/mk/Makefile.node_deps.defs
 include ./tools/mk/Makefile.smf.defs
+
+#
+# Env vars
+#
+PATH	:= $(NODE_INSTALL)/bin:${PATH}
 
 #
 # MG Variables
