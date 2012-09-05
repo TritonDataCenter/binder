@@ -24,7 +24,7 @@ SMF_MANIFESTS_IN = smf/manifests/binder.xml.in
 #
 
 NODE_PREBUILT_TAG	= zone
-NODE_PREBUILT_VERSION	:= v0.8.6
+NODE_PREBUILT_VERSION	:= v0.8.8
 
 # RELENG-341: no npm cache is making builds unreliable
 NPM_FLAGS :=
