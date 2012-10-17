@@ -7,10 +7,12 @@ var path = require('path');
 var repl = require('repl');
 
 var bunyan = require('bunyan');
+var clone = require('clone');
 var Cache = require('expiring-lru-cache');
 var named = require('named');
-var nopt = require('nopt');
+var getopt = require('posix-getopt');
 var uuid = require('node-uuid');
+var xtend = require('xtend');
 var zkplus = require('zkplus');
 
 var core = require('./lib');
@@ -22,85 +24,103 @@ var core = require('./lib');
 var ARecord = named.ARecord;
 
 var CACHE;
+var DEFAULTS = {
+        expiry: 60000,
+        size: 10000,
+        port: 53
+};
 var NAME = 'binder';
-var LOG;
-var PARSED;
-var SERVERS = [];
+var LOG = bunyan.createLogger({
+        name: NAME,
+        level: (process.env.LOG_LEVEL || 'info'),
+        stream: process.stderr,
+        serializers: {
+                err: bunyan.stdSerializers.err,
+                query: core.bunyan.querySerializer
+        }
+});
 var ZK;
-
-var OPTS = {
-        'debug': Number,
-        'cacheAge': Number,
-        'cacheSize': Number,
-        'port': Number,
-        'help': Boolean
-};
-
-var SHORT_OPTS = {
-        'a': ['--cacheAge'],
-        'd': ['--debug'],
-        'p': ['--port'],
-        's': ['--cacheSize'],
-        'h': ['--help']
-};
-
 
 
 ///--- Internal Functions
 
-function usage(code, message) {
-        var _opts = '';
-        Object.keys(SHORT_OPTS).forEach(function (k) {
-                var longOpt = SHORT_OPTS[k][0].replace('--', '');
-                var type = OPTS[longOpt].name || 'string';
+function parseOptions() {
+        var option;
+        var opts = {};
+        var parser = new getopt.BasicParser('hva:s:p:', process.argv);
 
-                if (type && type === 'boolean')
-                        type = '';
-                type = type.toLowerCase();
+        while ((option = parser.getopt()) !== undefined) {
+                switch (option.option) {
+                case 'a':
+                        opts.expiry = parseInt(option.optarg, 10);
+                        break;
 
-                _opts += ' [--' + longOpt + ' ' + type + ']';
-        });
+                case 'h':
+                        usage();
+                        break;
 
-        var msg = (message ? message + '\n' : '') +
-                'usage: ' + path.basename(process.argv[1]) + _opts;
+                case 'p':
+                        opts.port = parseInt(option.optarg, 10);
+                        break;
 
-        console.error(msg);
-        process.exit(code);
+                case 's':
+                        opts.size = parseInt(option.optarg, 10);
+                        break;
+
+                case 'v':
+                        // Allows us to set -vvv -> this little hackery
+                        // just ensures that we're never < TRACE
+                        LOG.level(Math.max(bunyan.TRACE, (LOG.level() - 10)));
+                        if (LOG.level() <= bunyan.DEBUG)
+                                LOG = LOG.child({src: true});
+                        break;
+
+                default:
+                        process.exit(1);
+                        break;
+                }
+        }
+
+        return (xtend({}, clone(DEFAULTS), opts));
 }
 
 
-function run(callback) {
-        ZK = zkplus.createClient({
-                host: (process.env.ZK_HOST || 'localhost'),
+function usage(msg) {
+        if (msg)
+                console.error(msg);
+
+        var str = 'usage: ' + NAME;
+        str += '[-v] [-e cacheExpiry] [-s cacheSize] [-p port]';
+        console.error(str);
+        process.exit(msg ? 1 : 0);
+}
+
+
+function run(opts) {
+        var cache = new Cache({
+                log: LOG,
+                name: 'binder',
+                size: opts.size,
+                expiry: opts.expiry
+        });
+
+        var zk = zkplus.createClient({
+                host: (process.env.ZK_HOST || '127.0.0.1'),
                 log: LOG
         });
-        ZK.on('connect', function () {
+        zk.once('connect', function () {
                 LOG.debug('ZK client created');
 
                 var server = core.createServer({
-                        cache: CACHE,
+                        cache: cache,
                         name: NAME,
                         log: LOG,
-                        port: (PARSED.port || 53),
-                        zkClient: ZK
+                        port: opts.port,
+                        zkClient: zk
                 });
 
 
-                server.start(function () {
-                        SERVERS.push(server);
-                        if (callback)
-                                callback(null, server);
-                });
-        });
-}
-
-
-function startREPL() {
-        net.createServer(function (socket) {
-                var r = repl.start('bindjs> ', socket);
-                r.context.SERVERS = SERVERS;
-        }).listen(5002, 'localhost', function () {
-                LOG.info('REPL started on 5002');
+                server.start();
         });
 }
 
@@ -108,45 +128,20 @@ function startREPL() {
 
 ///--- Mainline
 
-PARSED = nopt(OPTS, SHORT_OPTS, process.argv, 2);
-if (PARSED.help)
-        usage(0);
+var _opts = parseOptions();
 
-LOG = bunyan.createLogger({
-        level: PARSED.debug ? 'debug' : 'info',
-        name: NAME,
-        stream: process.stderr,
-        serializers: {
-                err: bunyan.stdSerializers.err,
-                query: core.bunyan.querySerializer
-        },
-        src: PARSED.debug ? true : false
-});
+if (cluster.isMaster) {
+        LOG.info(_opts, 'configuration/options parsed');
 
-CACHE = new Cache({
-        log: LOG,
-        name: 'binder',
-        size: (PARSED.cacheSize || 1000),
-        expiry: (PARSED.cacheAge || 60000)
-});
-
-if (PARSED.debug) {
-        if (PARSED.debug > 1)
-                LOG.level('trace');
-
-        run(startREPL());
-} else if (cluster.isMaster) {
-        for (var i = 0; i < os.cpus().length - 1; i++)
+        for (var i = 0; i < Math.min(4, os.cpus().length); i++)
                 cluster.fork();
 
-        cluster.on('death', function (worker) {
-                LOG.error({worker: worker}, 'worker %d exited');
-                cluster.fork();
+        cluster.on('exit', function (worker) {
+                LOG.fatal({worker: worker}, 'worker %d exited');
+                process.exit(1);
         });
-
-        startREPL();
 } else {
-        run();
+        run(_opts);
 }
 
 process.on('uncaughtException', function (err) {

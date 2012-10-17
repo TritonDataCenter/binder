@@ -24,7 +24,7 @@ SMF_MANIFESTS_IN = smf/manifests/binder.xml.in
 #
 
 NODE_PREBUILT_TAG	= zone
-NODE_PREBUILT_VERSION	:= v0.8.8
+NODE_PREBUILT_VERSION	:= v0.8.11
 
 # RELENG-341: no npm cache is making builds unreliable
 NPM_FLAGS :=
@@ -53,7 +53,6 @@ TMPDIR                  := /tmp/$(STAMP)
 .PHONY: all
 all: $(SMF_MANIFESTS) | $(NODEUNIT) $(REPO_DEPS)
 	$(NPM) rebuild
-	$(NPM) shrinkwrap
 
 $(NODEUNIT): | $(NPM_EXEC)
 	$(NPM) install
