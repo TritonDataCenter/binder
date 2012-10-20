@@ -1,6 +1,5 @@
 // Copyright (c) 2012, Joyent, Inc. All rights reserved.
 
-var cluster = require('cluster');
 var net = require('net');
 var os = require('os');
 var path = require('path');
@@ -128,21 +127,7 @@ function run(opts) {
 
 ///--- Mainline
 
-var _opts = parseOptions();
-
-if (cluster.isMaster) {
-        LOG.info(_opts, 'configuration/options parsed');
-
-        for (var i = 0; i < Math.min(4, os.cpus().length); i++)
-                cluster.fork();
-
-        cluster.on('exit', function (worker) {
-                LOG.fatal({worker: worker}, 'worker %d exited');
-                process.exit(1);
-        });
-} else {
-        run(_opts);
-}
+run(parseOptions());
 
 process.on('uncaughtException', function (err) {
         LOG.fatal({err: err}, 'uncaughtException (exiting error code 1)');
