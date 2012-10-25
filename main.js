@@ -43,6 +43,41 @@ var ZK;
 
 ///--- Internal Functions
 
+function createZkClient() {
+        function onConnect() {
+                zk.removeListener('error', onError);
+                LOG.debug('ZK client created');
+
+                ZK = zk;
+                zk.once('error', function (err) {
+                        LOG.error(err, 'ZooKeeper client error');
+                        zk.close();
+                        ZK = null;
+                });
+                zk.once('close', createZkClient);
+        }
+
+        function onError(err) {
+                LOG.error(err, 'unable to connect to ZK');
+                zk.removeListener('connect', onConnect);
+                zk.close();
+                setTimeout(createZkClient.bind(null), 1000);
+        }
+
+        var zk = zkplus.createClient({
+                autoReconnect: false,
+                connectTimeout: 1000,
+                host: (process.env.ZK_HOST || '127.0.0.1'),
+                log: LOG,
+                timeout: 6000
+        });
+        zk.once('connect', onConnect);
+        zk.once('error', onError);
+
+        return (zk);
+}
+
+
 function parseOptions() {
         var option;
         var opts = {};
@@ -103,39 +138,18 @@ function run(opts) {
                 expiry: opts.expiry
         });
 
-        function onConnect() {
-                zk.removeListener('error', onError);
-                LOG.debug('ZK client created');
-
-                var server = core.createServer({
-                        cache: cache,
-                        name: NAME,
-                        log: LOG,
-                        port: opts.port,
-                        zkClient: zk
-                });
-
-
-                server.start();
-        }
-
-        function onError(err) {
-                LOG.error(err, 'unable to connect to ZK');
-                zk.removeListener('connect', onConnect);
-                zk.close();
-                setTimeout(run.bind(null, opts), 1000);
-        }
-
-        var zk = zkplus.createClient({
-                autoReconnect: true,
-                connectTimeout: 1000,
-                host: (process.env.ZK_HOST || '127.0.0.1'),
+        createZkClient();
+        var server = core.createServer({
+                cache: cache,
+                name: NAME,
                 log: LOG,
-                timeout: 6000
+                port: opts.port,
+                zkClient: function () {
+                        return (ZK);
+                }
         });
-        zk.once('connect', onConnect);
 
-        zk.once('error', onError);
+        server.start();
 }
 
 
