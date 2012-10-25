@@ -103,11 +103,8 @@ function run(opts) {
                 expiry: opts.expiry
         });
 
-        var zk = zkplus.createClient({
-                host: (process.env.ZK_HOST || '127.0.0.1'),
-                log: LOG
-        });
-        zk.once('connect', function () {
+        function onConnect() {
+                zk.removeListener('error', onError);
                 LOG.debug('ZK client created');
 
                 var server = core.createServer({
@@ -120,7 +117,25 @@ function run(opts) {
 
 
                 server.start();
+        }
+
+        function onError(err) {
+                LOG.error(err, 'unable to connect to ZK');
+                zk.removeListener('connect', onConnect);
+                zk.close();
+                setTimeout(run.bind(null, opts), 1000);
+        }
+
+        var zk = zkplus.createClient({
+                autoReconnect: true,
+                connectTimeout: 1000,
+                host: (process.env.ZK_HOST || '127.0.0.1'),
+                log: LOG,
+                timeout: 6000
         });
+        zk.once('connect', onConnect);
+
+        zk.once('error', onError);
 }
 
 
