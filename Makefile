@@ -24,7 +24,7 @@ SMF_MANIFESTS_IN = smf/manifests/binder.xml.in
 #
 
 NODE_PREBUILT_TAG	= zone
-NODE_PREBUILT_VERSION	:= v0.8.12
+NODE_PREBUILT_VERSION	:= v0.8.14
 
 include ./tools/mk/Makefile.defs
 include ./tools/mk/Makefile.node_prebuilt.defs
