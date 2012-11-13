@@ -7,7 +7,7 @@ var repl = require('repl');
 
 var bunyan = require('bunyan');
 var clone = require('clone');
-var Cache = require('expiring-lru-cache');
+var LRU = require('lru-cache');
 var named = require('named');
 var getopt = require('posix-getopt');
 var uuid = require('node-uuid');
@@ -46,7 +46,7 @@ var ZK;
 function createZkClient() {
         function onConnect() {
                 zk.removeListener('error', onError);
-                LOG.debug('ZK client created');
+                LOG.debug('ZK client ready');
 
                 ZK = zk;
                 zk.once('error', function (err) {
@@ -61,7 +61,7 @@ function createZkClient() {
                 LOG.error(err, 'unable to connect to ZK');
                 zk.removeListener('connect', onConnect);
                 zk.close();
-                setTimeout(createZkClient.bind(null), 1000);
+                setTimeout(createZkClient.bind(null), 2000);
         }
 
         var zk = zkplus.createClient({
@@ -131,11 +131,9 @@ function usage(msg) {
 
 
 function run(opts) {
-        var cache = new Cache({
-                log: LOG,
-                name: 'binder',
-                size: opts.size,
-                expiry: opts.expiry
+        var cache = new LRU({
+                max: opts.size,
+                maxAge: opts.expiry
         });
 
         createZkClient();
