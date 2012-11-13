@@ -73,6 +73,8 @@ function createZkClient() {
         zk.once('connect', onConnect);
         zk.once('error', onError);
 
+        zk.connect();
+
         return (zk);
 }
 
