@@ -65,11 +65,10 @@ function createZkClient() {
         }
 
         var zk = zkplus.createClient({
-                autoReconnect: false,
                 connectTimeout: 1000,
                 host: (process.env.ZK_HOST || '127.0.0.1'),
                 log: LOG,
-                timeout: 6000
+                timeout: 30000
         });
         zk.once('connect', onConnect);
         zk.once('error', onError);
