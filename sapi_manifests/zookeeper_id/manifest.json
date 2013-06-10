@@ -1,0 +1,6 @@
+{
+	"name": "zookeeper",
+    "path": "/var/db/zookeeper/myid",
+	"post_cmd": "svcadm restart zookeeper",
+	"master": true
+}
