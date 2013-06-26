@@ -48,7 +48,7 @@ TMPDIR                  := /tmp/$(STAMP)
 # Repo-specific targets
 #
 .PHONY: all
-all: $(SMF_MANIFESTS) | $(NODEUNIT) $(REPO_DEPS)
+all: $(SMF_MANIFESTS) | $(NODEUNIT) $(REPO_DEPS) scripts
 	$(NPM) rebuild
 
 $(NODEUNIT): | $(NPM_EXEC)
@@ -64,11 +64,13 @@ test: $(NODEUNIT)
 release: all docs $(SMF_MANIFESTS)
 	@echo "Building $(RELEASE_TARBALL)"
 	@mkdir -p $(TMPDIR)/root/opt/smartdc/binder
+	@mkdir -p $(TMPDIR)/root/opt/smartdc/boot
 	@mkdir -p $(TMPDIR)/site
 	@touch $(TMPDIR)/site/.do-not-delete-me
 	@mkdir -p $(TMPDIR)/root
 	@mkdir -p $(TMPDIR)/root/opt/smartdc/binder/etc
 	cp -r   $(ROOT)/build \
+		$(ROOT)/boot \
 		$(ROOT)/lib \
 		$(ROOT)/main.js \
 		$(ROOT)/node_modules \
@@ -76,6 +78,11 @@ release: all docs $(SMF_MANIFESTS)
 		$(ROOT)/sapi_manifests \
 		$(ROOT)/smf \
 		$(TMPDIR)/root/opt/smartdc/binder
+	mv $(TMPDIR)/root/opt/smartdc/binder/build/scripts \
+	    $(TMPDIR)/root/opt/smartdc/binder/boot
+	ln -s /opt/smartdc/binder/boot/configure.sh \
+	    $(TMPDIR)/root/opt/smartdc/boot/configure.sh
+	chmod 755 $(TMPDIR)/root/opt/smartdc/binder/boot/configure.sh
 	(cd $(TMPDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root site)
 	@rm -rf $(TMPDIR)
 
