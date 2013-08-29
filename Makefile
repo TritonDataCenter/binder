@@ -48,7 +48,7 @@ TMPDIR                  := /tmp/$(STAMP)
 # Repo-specific targets
 #
 .PHONY: all
-all: $(SMF_MANIFESTS) | $(NODEUNIT) $(REPO_DEPS) scripts
+all: $(SMF_MANIFESTS) | $(NODEUNIT) $(REPO_DEPS) scripts sdc-scripts
 	$(NPM) rebuild
 
 $(NODEUNIT): | $(NPM_EXEC)
@@ -80,6 +80,11 @@ release: all docs $(SMF_MANIFESTS)
 		$(TMPDIR)/root/opt/smartdc/binder
 	mv $(TMPDIR)/root/opt/smartdc/binder/build/scripts \
 	    $(TMPDIR)/root/opt/smartdc/binder/boot
+	@mkdir -p $(TMPDIR)/root/opt/smartdc/sdc-boot
+	cp $(ROOT)/sdc-boot/*.sh \
+	    $(TMPDIR)/root/opt/smartdc/sdc-boot/
+	mv $(TMPDIR)/root/opt/smartdc/binder/build/sdc-scripts \
+	    $(TMPDIR)/root/opt/smartdc/sdc-boot/scripts
 	ln -s /opt/smartdc/binder/boot/configure.sh \
 	    $(TMPDIR)/root/opt/smartdc/boot/configure.sh
 	chmod 755 $(TMPDIR)/root/opt/smartdc/binder/boot/configure.sh
