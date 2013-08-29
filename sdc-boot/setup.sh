@@ -8,14 +8,14 @@ set -o xtrace
 
 PATH=/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin
 
+CONFIG_AGENT_LOCAL_MANIFESTS_DIRS=/opt/smartdc/binder
+
 # Include common utility functions (then run the boilerplate)
 source /opt/smartdc/sdc-boot/scripts/util.sh
 sdc_common_setup
 
 # Install zookeeper package, need to touch this file to disable the license prompt
 touch /opt/local/.dli_license_accepted
-
-CONFIG_AGENT_LOCAL_MANIFESTS_DIRS=/opt/smartdc/binder
 
 app_name=${zone_role}
 
