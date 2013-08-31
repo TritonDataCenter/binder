@@ -80,9 +80,10 @@ release: all docs $(SMF_MANIFESTS)
 		$(TMPDIR)/root/opt/smartdc/binder
 	mv $(TMPDIR)/root/opt/smartdc/binder/build/scripts \
 	    $(TMPDIR)/root/opt/smartdc/binder/boot
-	@mkdir -p $(TMPDIR)/root/opt/smartdc/sdc-boot
-	cp $(ROOT)/sdc-boot/*.sh \
+	mkdir -p $(TMPDIR)/root/opt/smartdc/sdc-boot
+	cp -R $(ROOT)/deps/sdc-scripts/* \
 	    $(TMPDIR)/root/opt/smartdc/sdc-boot/
+	cp -R $(ROOT)/sdc-boot/* $(TMPDIR)/root/opt/smartdc/sdc-boot/
 	mv $(TMPDIR)/root/opt/smartdc/binder/build/sdc-scripts \
 	    $(TMPDIR)/root/opt/smartdc/sdc-boot/scripts
 	ln -s /opt/smartdc/binder/boot/configure.sh \
@@ -107,3 +108,5 @@ include ./tools/mk/Makefile.node_prebuilt.targ
 include ./tools/mk/Makefile.node_deps.targ
 include ./tools/mk/Makefile.smf.targ
 include ./tools/mk/Makefile.targ
+
+sdc-scripts: deps/%/.git

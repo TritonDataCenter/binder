@@ -11,7 +11,7 @@ PATH=/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin
 CONFIG_AGENT_LOCAL_MANIFESTS_DIRS=/opt/smartdc/binder
 
 # Include common utility functions (then run the boilerplate)
-source /opt/smartdc/sdc-boot/scripts/util.sh
+source /opt/smartdc/sdc-boot/lib/util.sh
 sdc_common_setup
 
 # Install zookeeper package, need to touch this file to disable the license prompt
