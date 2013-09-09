@@ -78,15 +78,12 @@ release: all docs $(SMF_MANIFESTS)
 		$(ROOT)/sapi_manifests \
 		$(ROOT)/smf \
 		$(TMPDIR)/root/opt/smartdc/binder
-	mv $(TMPDIR)/root/opt/smartdc/binder/build/scripts \
-	    $(TMPDIR)/root/opt/smartdc/binder/boot
-	mkdir -p $(TMPDIR)/root/opt/smartdc/sdc-boot
+	mkdir -p $(TMPDIR)/root/opt/smartdc/boot/scripts
+	cp -R $(TMPDIR)/root/opt/smartdc/binder/build/scripts/* \
+	    $(TMPDIR)/root/opt/smartdc/boot/scripts/
 	cp -R $(ROOT)/deps/sdc-scripts/* \
-	    $(TMPDIR)/root/opt/smartdc/sdc-boot/
-	cp -R $(ROOT)/sdc-boot/* $(TMPDIR)/root/opt/smartdc/sdc-boot/
-	ln -s /opt/smartdc/binder/boot/configure.sh \
-	    $(TMPDIR)/root/opt/smartdc/boot/configure.sh
-	chmod 755 $(TMPDIR)/root/opt/smartdc/binder/boot/configure.sh
+	    $(TMPDIR)/root/opt/smartdc/boot/
+	cp -R $(ROOT)/boot/* $(TMPDIR)/root/opt/smartdc/boot/
 	(cd $(TMPDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root site)
 	@rm -rf $(TMPDIR)
 

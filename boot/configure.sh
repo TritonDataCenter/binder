@@ -1,51 +1,34 @@
-#!/bin/bash
+#!/usr/bin/bash
 # -*- mode: shell-script; fill-column: 80; -*-
+#
+# Copyright (c) 2013 Joyent Inc., All rights reserved.
+#
 
+export PS4='[\D{%FT%TZ}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 set -o xtrace
 
-SOURCE="${BASH_SOURCE[0]}"
-if [[ -h $SOURCE ]]; then
-    SOURCE="$(readlink "$SOURCE")"
+PATH=/opt/nodejs/bin:/opt/local/bin:/opt/local/sbin:/usr/bin:/usr/sbin
+
+#
+# XXX in the future this should come from SAPI and we should be pulling out
+# the "application" that's the parent of this instance. (see: SAPI-173)
+#
+if [[ -n $(mdata-get sdc:tags.manta_role) ]]; then
+    export FLAVOR="manta"
+else
+    export FLAVOR="sdc"
 fi
-DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-SVC_ROOT=/opt/smartdc/binder
 
-source ${DIR}/scripts/util.sh
-source ${DIR}/scripts/services.sh
+if [[ ${FLAVOR} == "sdc" ]]; then
 
-export PATH=$SVC_ROOT/build/node/bin:/opt/local/bin:/usr/sbin/:/usr/bin:$PATH
-export ZOO_LOG4J_PROP=TRACE,CONSOLE
+    echo "Enabling service zookeeper"
+    /usr/sbin/svcadm disable application/zookeeper
+    /usr/sbin/svcadm enable application/zookeeper
 
+    echo "Enabling service binder"
+    /usr/sbin/svcadm disable application/binder
+    /usr/sbin/svcadm enable application/binder
 
-function manta_setup_zookeeper {
-    manta_add_logadm_entry "zookeeper" "/var/log"
-
-    svccfg import /opt/local/share/smf/zookeeper-server/manifest.xml || \
-	fatal "unable to import ZooKeeper"
-    svcadm enable zookeeper || fatal "unable to start ZooKeeper"
-}
-
-
-# Mainline
-
-echo "Running common setup scripts"
-manta_common_presetup
-
-echo "Adding local manifest directories"
-manta_add_manifest_dir "/opt/smartdc/binder"
-
-manta_common_setup "binder"
-
-echo "Setting up ZooKeeper"
-manta_setup_zookeeper
-
-manta_ensure_zk
-
-echo "Installing binder"
-svccfg import $SVC_ROOT/smf/manifests/binder.xml || \
-    fatal "unable to import binder"
-svcadm enable binder || fatal "unable to start binder"
-
-manta_common_setup_end
+fi
 
 exit 0
