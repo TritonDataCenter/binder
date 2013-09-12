@@ -2,7 +2,7 @@
 <!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
 <!-- Copyright (c) 2012, Joyent, Inc. All rights reserved. -->
 <service_bundle type="manifest" name="binder">
-    <service name="sds/application/binder" type="service" version="1">
+    <service name="manta/application/binder" type="service" version="1">
 	<create_default_instance enabled="true" />
 	<single_instance />
 
