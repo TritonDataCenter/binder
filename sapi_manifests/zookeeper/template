@@ -17,4 +17,4 @@ server.{{num}}={{host}}:2888:3888
 {{#ZK_SERVERS}}
 server.{{num}}={{host}}:2888:3888
 {{/ZK_SERVERS}}
-{{#ZK_HA_SERVERS}}
+{{/ZK_HA_SERVERS}}
