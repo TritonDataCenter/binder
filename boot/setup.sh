@@ -65,13 +65,10 @@ if [[ ${FLAVOR} == "manta" ]]; then
 
 else # FLAVOR == "sdc"
 
-    CONFIG_AGENT_LOCAL_MANIFESTS_DIRS=/opt/smartdc/binder
-
     # Include common utility functions (then run the boilerplate)
     source /opt/smartdc/boot/lib/util.sh
+    CONFIG_AGENT_LOCAL_MANIFESTS_DIRS=/opt/smartdc/binder
     sdc_common_setup
-
-    app_name=${zone_role}
 
     # Cookie to identify this as a SmartDC zone and its role
     mkdir -p /var/smartdc/binder
@@ -84,6 +81,13 @@ else # FLAVOR == "sdc"
     echo "Importing binder SMF manifest."
     [[ -z $(/usr/bin/svcs -a | grep binder) ]] && \
       /usr/sbin/svccfg import /opt/smartdc/binder/smf/manifests/binder.xml
+
+    # Log rotation.
+    sdc_log_rotation_add amon-agent /var/svc/log/*amon-agent*.log 1g
+    sdc_log_rotation_add config-agent /var/svc/log/*config-agent*.log 1g
+    sdc_log_rotation_add registrar /var/svc/log/*registrar*.log 1g
+    sdc_log_rotation_add binder /var/svc/log/*binder*.log 1g
+    sdc_log_rotation_setup_end
 
     # All done, run boilerplate end-of-setup
     sdc_setup_complete
