@@ -42,7 +42,7 @@ PATH	:= $(NODE_INSTALL)/bin:${PATH}
 
 RELEASE_TARBALL         := binder-pkg-$(STAMP).tar.bz2
 ROOT                    := $(shell pwd)
-TMPDIR                  := /tmp/$(STAMP)
+RELSTAGEDIR             := /tmp/$(STAMP)
 
 #
 # Repo-specific targets
@@ -68,12 +68,12 @@ scripts: deps/manta-scripts/.git
 .PHONY: release
 release: all docs $(SMF_MANIFESTS)
 	@echo "Building $(RELEASE_TARBALL)"
-	@mkdir -p $(TMPDIR)/root/opt/smartdc/binder
-	@mkdir -p $(TMPDIR)/root/opt/smartdc/boot
-	@mkdir -p $(TMPDIR)/site
-	@touch $(TMPDIR)/site/.do-not-delete-me
-	@mkdir -p $(TMPDIR)/root
-	@mkdir -p $(TMPDIR)/root/opt/smartdc/binder/etc
+	@mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/binder
+	@mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/boot
+	@mkdir -p $(RELSTAGEDIR)/site
+	@touch $(RELSTAGEDIR)/site/.do-not-delete-me
+	@mkdir -p $(RELSTAGEDIR)/root
+	@mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/binder/etc
 	cp -r   $(ROOT)/build \
 		$(ROOT)/boot \
 		$(ROOT)/lib \
@@ -82,15 +82,15 @@ release: all docs $(SMF_MANIFESTS)
 		$(ROOT)/package.json \
 		$(ROOT)/sapi_manifests \
 		$(ROOT)/smf \
-		$(TMPDIR)/root/opt/smartdc/binder
-	mkdir -p $(TMPDIR)/root/opt/smartdc/boot/scripts
-	cp -R $(TMPDIR)/root/opt/smartdc/binder/build/scripts/* \
-	    $(TMPDIR)/root/opt/smartdc/boot/scripts/
+		$(RELSTAGEDIR)/root/opt/smartdc/binder
+	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/boot/scripts
+	cp -R $(RELSTAGEDIR)/root/opt/smartdc/binder/build/scripts/* \
+	    $(RELSTAGEDIR)/root/opt/smartdc/boot/scripts/
 	cp -R $(ROOT)/deps/sdc-scripts/* \
-	    $(TMPDIR)/root/opt/smartdc/boot/
-	cp -R $(ROOT)/boot/* $(TMPDIR)/root/opt/smartdc/boot/
-	(cd $(TMPDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root site)
-	@rm -rf $(TMPDIR)
+	    $(RELSTAGEDIR)/root/opt/smartdc/boot/
+	cp -R $(ROOT)/boot/* $(RELSTAGEDIR)/root/opt/smartdc/boot/
+	(cd $(RELSTAGEDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root site)
+	@rm -rf $(RELSTAGEDIR)
 
 
 .PHONY: publish
