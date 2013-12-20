@@ -74,8 +74,7 @@ release: all docs $(SMF_MANIFESTS)
 	@touch $(RELSTAGEDIR)/site/.do-not-delete-me
 	@mkdir -p $(RELSTAGEDIR)/root
 	@mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/binder/etc
-	cp -r   $(ROOT)/build \
-		$(ROOT)/boot \
+	cp -r   $(ROOT)/boot \
 		$(ROOT)/lib \
 		$(ROOT)/main.js \
 		$(ROOT)/node_modules \
@@ -83,6 +82,12 @@ release: all docs $(SMF_MANIFESTS)
 		$(ROOT)/sapi_manifests \
 		$(ROOT)/smf \
 		$(RELSTAGEDIR)/root/opt/smartdc/binder
+	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/binder/build
+	cp -r \
+		$(ROOT)/build/node \
+		$(ROOT)/build/docs \
+		$(ROOT)/build/scripts \
+		$(RELSTAGEDIR)/root/opt/smartdc/binder/build
 	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/boot/scripts
 	cp -R $(RELSTAGEDIR)/root/opt/smartdc/binder/build/scripts/* \
 	    $(RELSTAGEDIR)/root/opt/smartdc/boot/scripts/
