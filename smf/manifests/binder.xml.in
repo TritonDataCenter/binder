@@ -34,6 +34,13 @@
 	    <service_fmri value="svc:/smartdc/mdata:execute" />
 	</dependency>
 
+        <dependency name="config-agent"
+                    grouping="optional_all"
+                    restart_on="none"
+                    type="service">
+            <service_fmri value="svc:/smartdc/application/config-agent" />
+        </dependency>
+
 	<exec_method type="method"
 		     name="start"
 		     exec="node main.js -v &amp;"
