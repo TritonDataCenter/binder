@@ -1,6 +1,5 @@
 // Copyright (c) 2012, Joyent, Inc. All rights reserved.
 
-var uuid = require('node-uuid');
 var vasync = require('vasync');
 var zkplus = require('zkplus');
 

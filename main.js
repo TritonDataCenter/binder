@@ -10,7 +10,6 @@ var clone = require('clone');
 var LRU = require('lru-cache');
 var named = require('named');
 var getopt = require('posix-getopt');
-var uuid = require('node-uuid');
 var xtend = require('xtend');
 var zkplus = require('zkplus');
 

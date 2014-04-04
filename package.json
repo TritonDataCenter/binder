@@ -5,11 +5,10 @@
         "author": "Joyent (joyent.com)",
         "private": true,
         "dependencies": {
-                "bunyan": "0.16.5",
+                "bunyan": "0.22.2",
                 "clone": "0.1.1",
                 "lru-cache": "2.1.0",
                 "named": "git://github.com/trevoro/node-named.git#aaf8723",
-                "node-uuid": "1.4.0",
                 "posix-getopt": "1.0.0",
                 "vasync": "1.3.2",
                 "xtend": "1.0.3",
