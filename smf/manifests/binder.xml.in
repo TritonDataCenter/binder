@@ -43,7 +43,7 @@
 
 	<exec_method type="method"
 		     name="start"
-		     exec="node main.js -v &amp;"
+		     exec="node main.js &amp;"
 		     timeout_seconds="10">
 	    <method_context working_directory="/opt/smartdc/binder">
                 <method_credential user="nobody"
