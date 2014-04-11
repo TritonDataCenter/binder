@@ -5,7 +5,7 @@
         "author": "Joyent (joyent.com)",
         "private": true,
         "dependencies": {
-                "bunyan": "0.22.2",
+                "bunyan": "0.22.3",
                 "clone": "0.1.1",
                 "lru-cache": "2.1.0",
                 "named": "git://github.com/trevoro/node-named.git#aaf8723",
