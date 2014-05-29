@@ -24,7 +24,8 @@ SMF_MANIFESTS_IN = smf/manifests/binder.xml.in
 #
 
 NODE_PREBUILT_TAG	= zone
-NODE_PREBUILT_VERSION	:= v0.8.21
+NODE_PREBUILT_VERSION	:= v0.8.26
+NODE_PREBUILT_IMAGE	= fd2cc906-8938-11e3-beab-4359c665ac99
 
 include ./tools/mk/Makefile.defs
 include ./tools/mk/Makefile.node_prebuilt.defs
@@ -50,6 +51,9 @@ RELSTAGEDIR             := /tmp/$(STAMP)
 .PHONY: all
 all: $(SMF_MANIFESTS) | $(NODEUNIT) $(REPO_DEPS) scripts sdc-scripts
 	$(NPM) rebuild
+
+npm:
+	$(NPM) install
 
 $(NODEUNIT): | $(NPM_EXEC)
 	$(NPM) install

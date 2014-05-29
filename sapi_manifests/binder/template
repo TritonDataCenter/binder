@@ -1,0 +1,24 @@
+{
+    {{! BINDER_SERVICE is sdc specific, only render recursion block in sdc }}
+    {{#BINDER_SERVICE}}
+    "recursion": {
+        "regionName": "{{{region_name}}}",
+        "datacenterName": "{{{datacenter_name}}}",
+        "dnsDomain": "{{{dns_domain}}}",
+        "ufds": {
+            "url": "ldaps://{{{ufds_domain}}}",
+            "bindDN": "{{{ufds_ldap_root_dn}}}",
+            "bindPassword": "{{{ufds_ldap_root_pw}}}",
+            "cache": {
+                "size": 5000,
+                "expiry": 60
+            },
+            "maxConnections": 1,
+            "retry": {
+                "initialDelay": 1000
+            },
+            "clientTimeout": 120000
+        }
+    }
+    {{/BINDER_SERVICE}}
+}
