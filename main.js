@@ -46,15 +46,14 @@ var ZK;
 ///--- Internal Functions
 
 function createZkClient(cb) {
-
         //We want to continue on with init even if ZK isn't available, but we
         // still want to come up cleanly if we can.
         var calledback = false;
         function onFirst() {
-                if (!calledback) {
+                if (!calledback && cb) {
+                        calledback = true;
                         return (cb());
                 }
-                calledback = true;
         }
 
         function onConnect() {
@@ -75,7 +74,7 @@ function createZkClient(cb) {
                 LOG.error(err, 'unable to connect to ZK');
                 zk.removeListener('connect', onConnect);
                 zk.close();
-                setTimeout(createZkClient.bind(null), 2000);
+                setTimeout(createZkClient, 2000);
                 onFirst();
         }
 
