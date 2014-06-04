@@ -15,9 +15,11 @@
             },
             "maxConnections": 1,
             "retry": {
-                "initialDelay": 1000
+                "initialDelay": 1000,
+                "retries": 3
             },
-            "clientTimeout": 120000
+            "clientTimeout": 120000,
+            "connectTimeout": 3000
         }
     }
     {{/BINDER_SERVICE}}

@@ -12,7 +12,7 @@
                 "named": "git://github.com/trevoro/node-named.git#aaf8723",
                 "native-dns": "0.6.1",
                 "posix-getopt": "1.0.0",
-                "sdc-clients": "git+ssh://git@git.joyent.com:node-sdc-clients.git#c962959",
+                "sdc-clients": "git+ssh://git@git.joyent.com:node-sdc-clients.git#4476ed0",
                 "vasync": "1.3.2",
                 "xtend": "1.0.3",
                 "zkplus": "git://github.com/mcavage/node-zkplus.git#b12cc44"
