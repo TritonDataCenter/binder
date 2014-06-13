@@ -6,7 +6,7 @@ initLimit=10
 # The number of ticks that can pass between
 # sending a request and getting an acknowledgement
 syncLimit=5
-dataDir=/var/db/zookeeper
+dataDir=/binder/zookeeper
 # the port at which the clients will connect
 clientPort=2181
 maxClientCnxns=0

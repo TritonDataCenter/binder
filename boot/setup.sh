@@ -13,6 +13,9 @@ if [[ -h $SOURCE ]]; then
 fi
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 SVC_ROOT=/opt/smartdc/binder
+BINDER_ROOT=/binder
+ZONE_UUID=$(zonename)
+ZONE_DATASET=zones/$ZONE_UUID/data
 
 export PATH=$SVC_ROOT/build/node/bin:/opt/local/bin:/usr/sbin/:/usr/bin:$PATH
 
@@ -26,6 +29,22 @@ function manta_setup_zookeeper {
         fatal "unable to import ZooKeeper"
     svcadm enable zookeeper || fatal "unable to start ZooKeeper"
 }
+
+#
+# Set up zookeeper db in the delegated dataset (if it exists)
+#
+mkdir -p $BINDER_ROOT
+chmod 777 $BINDER_ROOT
+zfs list $ZONE_DATASET && rc=$? || rc=$?
+if [[ $rc == 0 ]]; then
+    mountpoint=$(zfs get -H -o value mountpoint $ZONE_DATASET)
+    if [[ $mountpoint != $BINDER_ROOT ]]; then
+        zfs set mountpoint=$BINDER_ROOT $ZONE_DATASET || \
+            fatal "failed to set mountpoint"
+    fi
+fi
+# Zookeeper must own its directory.
+sudo -u zookeeper mkdir -p $BINDER_ROOT/zookeeper
 
 #
 # XXX in the future this should come from SAPI and we should be pulling out
