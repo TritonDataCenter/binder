@@ -34,7 +34,6 @@ function manta_setup_zookeeper {
 # Set up zookeeper db in the delegated dataset (if it exists)
 #
 mkdir -p $BINDER_ROOT
-chmod 777 $BINDER_ROOT
 zfs list $ZONE_DATASET && rc=$? || rc=$?
 if [[ $rc == 0 ]]; then
     mountpoint=$(zfs get -H -o value mountpoint $ZONE_DATASET)
@@ -44,6 +43,7 @@ if [[ $rc == 0 ]]; then
     fi
 fi
 # Zookeeper must own its directory.
+chmod 777 $BINDER_ROOT
 sudo -u zookeeper mkdir -p $BINDER_ROOT/zookeeper
 
 #
