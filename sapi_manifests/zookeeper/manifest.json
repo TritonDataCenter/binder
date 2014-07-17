@@ -1,6 +1,0 @@
-{
-    "name": "zookeeper",
-    "path": "/opt/local/etc/zookeeper/zoo.cfg",
-	"post_cmd": "svcadm restart zookeeper",
-	"master": true
-}

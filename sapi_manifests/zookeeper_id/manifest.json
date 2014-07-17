@@ -1,6 +1,0 @@
-{
-	"name": "zookeeper_id",
-	"path": "/binder/zookeeper/myid",
-	"post_cmd": "svcadm restart zookeeper",
-	"master": true
-}
