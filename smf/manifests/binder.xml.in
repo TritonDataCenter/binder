@@ -20,13 +20,6 @@
 	    <service_fmri value="svc:/system/filesystem/local" />
 	</dependency>
 
-	<dependency name="zookeeper"
-		    grouping="require_all"
-		    restart_on="error"
-		    type="service">
-	    <service_fmri value="svc:/application/zookeeper" />
-	</dependency>
-
 	<dependency name="mdata"
 		    grouping="require_all"
 		    restart_on="none"
@@ -40,6 +33,13 @@
                     type="service">
             <service_fmri value="svc:/smartdc/application/config-agent" />
         </dependency>
+
+	<dependency name="zookeeper"
+		    grouping="optional_all"
+		    restart_on="error"
+		    type="service">
+	    <service_fmri value="svc:/application/zookeeper" />
+	</dependency>
 
 	<exec_method type="method"
 		     name="start"

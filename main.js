@@ -60,13 +60,20 @@ function createZkClient(cb) {
                 zk.removeListener('error', onError);
                 LOG.debug('ZK client ready');
 
-                ZK = zk;
-                zk.once('error', function (err) {
+                // Since there may be multiple outstanding DNS requests
+                // holding a reference to ZK, we can't 'once' the error.
+                zk.on('error', function (err) {
                         LOG.error(err, 'ZooKeeper client error');
-                        zk.close();
-                        ZK = null;
+                        if (!zk.closeCalled) {
+                                zk.close();
+                                zk.closeCalled = true;
+                        }
+                        if (ZK === zk) {
+                                ZK = null;
+                        }
                 });
                 zk.once('close', createZkClient);
+                ZK = zk;
                 onFirst();
         }
 
@@ -74,6 +81,7 @@ function createZkClient(cb) {
                 LOG.error(err, 'unable to connect to ZK');
                 zk.removeListener('connect', onConnect);
                 zk.close();
+                zk.closeCalled = true;
                 setTimeout(createZkClient, 2000);
                 onFirst();
         }
@@ -84,6 +92,9 @@ function createZkClient(cb) {
                 log: LOG,
                 timeout: 30000
         });
+        // Unfortunately, the zk client does a "removeAllListeners" on close,
+        // so we keep track of when we call close.
+        zk.closeCalled = false;
         zk.once('connect', onConnect);
         zk.once('error', onError);
 
