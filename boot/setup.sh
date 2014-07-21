@@ -86,7 +86,7 @@ else # FLAVOR == "sdc"
 
     # Include common utility functions (then run the boilerplate)
     source /opt/smartdc/boot/lib/util.sh
-    CONFIG_AGENT_LOCAL_MANIFESTS_DIRS="/opt/smartdc/binder /opt/smartdc/binder/zookeeper-base"
+    CONFIG_AGENT_LOCAL_MANIFESTS_DIRS="/opt/smartdc/binder"
     sdc_common_setup
 
     # Cookie to identify this as a SmartDC zone and its role
