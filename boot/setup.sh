@@ -14,37 +14,41 @@ fi
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 SVC_ROOT=/opt/smartdc/binder
 BINDER_ROOT=/binder
-ZONE_UUID=$(zonename)
-ZONE_DATASET=zones/$ZONE_UUID/data
+# ZONE_UUID=$(zonename)
+# ZONE_DATASET=zones/$ZONE_UUID/data
 
 export PATH=$SVC_ROOT/build/node/bin:/opt/local/bin:/usr/sbin/:/usr/bin:$PATH
 
 # Install zookeeper package, need to touch this file to disable the license prompt
-touch /opt/local/.dli_license_accepted
+# touch /opt/local/.dli_license_accepted
 
 function manta_setup_zookeeper {
     manta_add_logadm_entry "zookeeper" "/var/log"
 
-    svccfg import /opt/local/share/smf/zookeeper-server/manifest.xml || \
+    svccfg import /opt/smartdc/binder/smf/manifests/zookeeper.xml || \
         fatal "unable to import ZooKeeper"
     svcadm enable zookeeper || fatal "unable to start ZooKeeper"
 }
 
+source /opt/smartdc/boot/zk_common.sh
+setup_zk_delegated_dataset ${BINDER_ROOT}
+
+
 #
 # Set up zookeeper db in the delegated dataset (if it exists)
 #
-mkdir -p $BINDER_ROOT
-zfs list $ZONE_DATASET && rc=$? || rc=$?
-if [[ $rc == 0 ]]; then
-    mountpoint=$(zfs get -H -o value mountpoint $ZONE_DATASET)
-    if [[ $mountpoint != $BINDER_ROOT ]]; then
-        zfs set mountpoint=$BINDER_ROOT $ZONE_DATASET || \
-            fatal "failed to set mountpoint"
-    fi
-fi
-# Zookeeper must own its directory.
-chmod 777 $BINDER_ROOT
-sudo -u zookeeper mkdir -p $BINDER_ROOT/zookeeper
+# mkdir -p $BINDER_ROOT
+# zfs list $ZONE_DATASET && rc=$? || rc=$?
+# if [[ $rc == 0 ]]; then
+#     mountpoint=$(zfs get -H -o value mountpoint $ZONE_DATASET)
+#     if [[ $mountpoint != $BINDER_ROOT ]]; then
+#         zfs set mountpoint=$BINDER_ROOT $ZONE_DATASET || \
+#             fatal "failed to set mountpoint"
+#     fi
+# fi
+# # Zookeeper must own its directory.
+# chmod 777 $BINDER_ROOT
+# sudo -u zookeeper mkdir -p $BINDER_ROOT/zookeeper
 
 #
 # XXX in the future this should come from SAPI and we should be pulling out
@@ -95,7 +99,7 @@ else # FLAVOR == "sdc"
 
     echo "Importing zookeeper SMF manifest."
     [[ -z $(/usr/bin/svcs -a | grep zookeeper) ]] && \
-      /usr/sbin/svccfg import /opt/local/share/smf/zookeeper-server/manifest.xml
+      /usr/sbin/svccfg import /opt/smartdc/binder/smf/manifests/zookeeper.xml
 
     echo "Importing binder SMF manifest."
     [[ -z $(/usr/bin/svcs -a | grep binder) ]] && \
