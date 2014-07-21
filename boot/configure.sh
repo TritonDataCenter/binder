@@ -19,16 +19,4 @@ else
     export FLAVOR="sdc"
 fi
 
-if [[ ${FLAVOR} == "sdc" ]]; then
-
-    echo "Enabling service zookeeper"
-    /usr/sbin/svcadm disable application/zookeeper
-    /usr/sbin/svcadm enable application/zookeeper
-
-    echo "Enabling service binder"
-    /usr/sbin/svcadm disable application/binder
-    /usr/sbin/svcadm enable application/binder
-
-fi
-
 exit 0
