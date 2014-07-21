@@ -78,12 +78,12 @@ release: all docs $(SMF_MANIFESTS)
 	@touch $(RELSTAGEDIR)/site/.do-not-delete-me
 	@mkdir -p $(RELSTAGEDIR)/root
 	@mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/binder/etc
-	cp -r   $(ROOT)/boot \
-		$(ROOT)/lib \
+	cp -r   $(ROOT)/lib \
 		$(ROOT)/main.js \
 		$(ROOT)/node_modules \
 		$(ROOT)/package.json \
 		$(ROOT)/sapi_manifests \
+		$(ROOT)/zookeeper-base/sapi_manifests \
 		$(ROOT)/smf \
 		$(RELSTAGEDIR)/root/opt/smartdc/binder
 	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/binder/build
