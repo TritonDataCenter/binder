@@ -10,7 +10,7 @@
 		    grouping="require_all"
 		    restart_on="error"
 		    type="service">
-	    <service_fmri value="svc:/network/physical" />
+	    <service_fmri value="svc:/milestone/network:default" />
 	</dependency>
 
 	<dependency name="filesystem"
@@ -38,7 +38,7 @@
 		    grouping="optional_all"
 		    restart_on="error"
 		    type="service">
-	    <service_fmri value="svc:/application/zookeeper" />
+	    <service_fmri value="svc:smartdc/application/zookeeper" />
 	</dependency>
 
 	<exec_method type="method"

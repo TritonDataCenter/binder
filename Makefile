@@ -17,7 +17,7 @@ JSL_CONF_NODE	 = tools/jsl.node.conf
 JSL_FILES_NODE   = $(JS_FILES)
 JSSTYLE_FILES	 = $(JS_FILES)
 JSSTYLE_FLAGS    = -f tools/jsstyle.conf
-SMF_MANIFESTS_IN = smf/manifests/binder.xml.in
+SMF_MANIFESTS_IN = smf/manifests/binder.xml.in smf/manifests/zookeeper.xml.in
 
 #
 # Variables
@@ -84,6 +84,7 @@ release: all docs $(SMF_MANIFESTS)
 		$(ROOT)/package.json \
 		$(ROOT)/sapi_manifests \
 		$(ROOT)/zookeeper-base/sapi_manifests \
+		$(ROOT)/zookeeper-base/smf \
 		$(ROOT)/smf \
 		$(RELSTAGEDIR)/root/opt/smartdc/binder
 	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/binder/build

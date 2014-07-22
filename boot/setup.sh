@@ -95,7 +95,7 @@ else # FLAVOR == "sdc"
 
     echo "Importing zookeeper SMF manifest."
     [[ -z $(/usr/bin/svcs -a | grep zookeeper) ]] && \
-      /usr/sbin/svccfg import /opt/local/share/smf/zookeeper-server/manifest.xml
+      /usr/sbin/svccfg import /opt/smartdc/binder/smf/manifests/zookeeper.xml
 
     echo "Importing binder SMF manifest."
     [[ -z $(/usr/bin/svcs -a | grep binder) ]] && \
