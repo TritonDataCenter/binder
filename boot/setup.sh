@@ -30,7 +30,7 @@ function manta_setup_zookeeper {
     svcadm enable zookeeper || fatal "unable to start ZooKeeper"
 }
 
-source ./zk_common.sh
+source /opt/smartdc/boot/zk_common.sh
 setup_zk_delegated_dataset ${BINDER_ROOT}
 
 
