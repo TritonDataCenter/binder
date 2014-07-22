@@ -31,7 +31,7 @@ function manta_setup_zookeeper {
 }
 
 source ./zk_common.sh
-setup_zk_delegated_dataset ${ZK_ROOT}
+setup_zk_delegated_dataset ${BINDER_ROOT}
 
 
 #
