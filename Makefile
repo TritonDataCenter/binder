@@ -99,6 +99,7 @@ release: all docs $(SMF_MANIFESTS)
 	cp -R $(ROOT)/deps/sdc-scripts/* \
 	    $(RELSTAGEDIR)/root/opt/smartdc/boot/
 	cp -R $(ROOT)/boot/* $(RELSTAGEDIR)/root/opt/smartdc/boot/
+	cp -R $(ROOT)/zookeeper-base/boot/* $(RELSTAGEDIR)/root/opt/smartdc/boot/
 	(cd $(RELSTAGEDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root site)
 	@rm -rf $(RELSTAGEDIR)
 
