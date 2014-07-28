@@ -83,8 +83,8 @@ release: all docs $(SMF_MANIFESTS)
 		$(ROOT)/node_modules \
 		$(ROOT)/package.json \
 		$(ROOT)/sapi_manifests \
-		$(ROOT)/zookeeper-base/sapi_manifests \
-		$(ROOT)/zookeeper-base/smf \
+		$(ROOT)/deps/zookeeper-base/sapi_manifests \
+		$(ROOT)/deps/zookeeper-base/smf \
 		$(ROOT)/smf \
 		$(RELSTAGEDIR)/root/opt/smartdc/binder
 	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/binder/build
