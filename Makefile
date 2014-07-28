@@ -17,7 +17,7 @@ JSL_CONF_NODE	 = tools/jsl.node.conf
 JSL_FILES_NODE   = $(JS_FILES)
 JSSTYLE_FILES	 = $(JS_FILES)
 JSSTYLE_FLAGS    = -f tools/jsstyle.conf
-SMF_MANIFESTS_IN = smf/manifests/binder.xml.in zookeeper-base/smf/manifests/zookeeper.xml.in
+SMF_MANIFESTS_IN = smf/manifests/binder.xml.in deps/zookeeper-base/smf/manifests/zookeeper.xml.in
 
 #
 # Variables
