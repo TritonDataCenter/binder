@@ -50,7 +50,7 @@ RELSTAGEDIR             := /tmp/$(STAMP)
 #
 .PHONY: all
 all: $(SMF_MANIFESTS) | $(NODEUNIT) $(REPO_DEPS) scripts sdc-scripts
-	$(NPM) rebuild
+	$(NPM) install
 
 npm:
 	$(NPM) install
