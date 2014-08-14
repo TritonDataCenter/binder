@@ -44,7 +44,7 @@ if [[ ${FLAVOR} == "manta" ]]; then
 
     echo "Setting up ZooKeeper"
     # manta_setup_zookeeper
-    manta_add_logadm_entry "zookeeper" "/var/log/zookeeper" "exect"
+    manta_add_logadm_entry "zookeeper" "/var/log/zookeeper" "exact"
 
     zk_common_import ${SVC_ROOT}
 
