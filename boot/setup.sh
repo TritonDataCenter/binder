@@ -20,6 +20,7 @@ export PATH=$SVC_ROOT/build/node/bin:/opt/local/bin:/usr/sbin/:/usr/bin:$PATH
 source /opt/smartdc/boot/zk_common.sh
 
 zk_common_delegated_dataset
+zk_common_log_rotation
 
 if [[ -n $(mdata-get sdc:tags.manta_role) ]]; then
     export FLAVOR="manta"
@@ -43,7 +44,7 @@ if [[ ${FLAVOR} == "manta" ]]; then
 
     echo "Setting up ZooKeeper"
     # manta_setup_zookeeper
-    manta_add_logadm_entry "zookeeper" "/var/log"
+    manta_add_logadm_entry "zookeeper" "/var/log/zookeeper" "exect"
 
     zk_common_import ${SVC_ROOT}
 
@@ -79,7 +80,7 @@ else # FLAVOR == "sdc"
     sdc_log_rotation_add config-agent /var/svc/log/*config-agent*.log 1g
     sdc_log_rotation_add registrar /var/svc/log/*registrar*.log 1g
     sdc_log_rotation_add binder /var/svc/log/*binder*.log 1g
-    sdc_log_rotation_add zookeeper /var/log/zookeeper/zookeeper.out 1g
+    sdc_log_rotation_add zookeeper /var/log/zookeeper/zookeeper.log 1g
     sdc_log_rotation_setup_end
 
     # All done, run boilerplate end-of-setup
