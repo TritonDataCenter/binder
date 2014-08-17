@@ -16,3 +16,6 @@
 [submodule "zookeeper-base"]
 	path = deps/zookeeper-base
 	url = git@git.joyent.com:zookeeper-base.git
+[submodule "deps/restdown-brand-remora"]
+	path = deps/restdown-brand-remora
+	url = git@github.com:joyent/restdown-brand-remora.git
