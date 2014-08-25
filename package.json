@@ -3,6 +3,7 @@
         "description": "SmartDataService DNS Service",
         "version": "1.0.0",
         "author": "Joyent (joyent.com)",
+        "license": "MPL-2.0",
         "private": true,
         "dependencies": {
                 "assert-plus": "0.1.5",
