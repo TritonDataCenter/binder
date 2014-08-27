@@ -12,7 +12,7 @@
 	url = git@git.joyent.com:manta-scripts.git
 [submodule "deps/sdc-scripts"]
 	path = deps/sdc-scripts
-	url = git@git.joyent.com:sdc-scripts.git
+	url = git@github.com:joyent/sdc-scripts.git
 [submodule "deps/zookeeper-base"]
 	path = deps/zookeeper-base
 	url = git@git.joyent.com:zookeeper-base.git
