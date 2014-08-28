@@ -24,7 +24,7 @@ JSL_CONF_NODE	 = tools/jsl.node.conf
 JSL_FILES_NODE   = $(JS_FILES)
 JSSTYLE_FILES	 = $(JS_FILES)
 JSSTYLE_FLAGS    = -f tools/jsstyle.conf
-SMF_MANIFESTS_IN = smf/manifests/binder.xml.in deps/zookeeper-base/smf/manifests/zookeeper.xml.in
+SMF_MANIFESTS_IN = smf/manifests/binder.xml.in deps/zookeeper-common/smf/manifests/zookeeper.xml.in
 
 #
 # Variables
@@ -90,8 +90,8 @@ release: all docs $(SMF_MANIFESTS)
 		$(ROOT)/node_modules \
 		$(ROOT)/package.json \
 		$(ROOT)/sapi_manifests \
-		$(ROOT)/deps/zookeeper-base/sapi_manifests \
-		$(ROOT)/deps/zookeeper-base/smf \
+		$(ROOT)/deps/zookeeper-common/sapi_manifests \
+		$(ROOT)/deps/zookeeper-common/smf \
 		$(ROOT)/smf \
 		$(RELSTAGEDIR)/root/opt/smartdc/binder
 	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/binder/build
@@ -106,7 +106,7 @@ release: all docs $(SMF_MANIFESTS)
 	cp -R $(ROOT)/deps/sdc-scripts/* \
 	    $(RELSTAGEDIR)/root/opt/smartdc/boot/
 	cp -R $(ROOT)/boot/* $(RELSTAGEDIR)/root/opt/smartdc/boot/
-	cp -R $(ROOT)/deps/zookeeper-base/boot/* $(RELSTAGEDIR)/root/opt/smartdc/boot/
+	cp -R $(ROOT)/deps/zookeeper-common/boot/* $(RELSTAGEDIR)/root/opt/smartdc/boot/
 	(cd $(RELSTAGEDIR) && $(TAR) -jcf $(ROOT)/$(RELEASE_TARBALL) root site)
 	@rm -rf $(RELSTAGEDIR)
 
