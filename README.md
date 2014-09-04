@@ -10,11 +10,9 @@
 
 # binder
 
-Repository: <git@git.joyent.com:binder.git>
-Browsing: <https://mo.joyent.com/binder>
-Who: Mark Cavage
-Docs: <https://mo.joyent.com/docs/binder>
-Tickets/bugs: <https://devhub.joyent.com/jira/browse/MANTA>
+This repository is part of the Joyent SmartDataCenter project (SDC).  For
+contribution guidelines, issues, and general documentation, visit the main
+[SDC](http://github.com/joyent/sdc) project page.
 
 # Overview
 
