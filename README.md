@@ -14,17 +14,20 @@ This repository is part of the Joyent SmartDataCenter project (SDC).  For
 contribution guidelines, issues, and general documentation, visit the main
 [SDC](http://github.com/joyent/sdc) project page.
 
-# Overview
-
 This repo contains 'binder', which is a DNS server implemented on top of
-ZooKeeper.  See docs/index.restdown for more information.
+ZooKeeper.  Hosts use [registrar](http://github.com/joyent/registrar) to
+register themselves into DNS.
+
+See docs/index.restdown for more information.
 
 # Repository
 
+    boot/           Configuration scripts on zone setup.
     deps/           Git submodules (node et al).
     docs/           Project docs (restdown)
     lib/            Source files.
     node_modules/   Node.js deps, populated at build time.
+    sapi_manifests/ SAPI manifests for zone configuration.
     smf/manifests   SMF manifests
     test/           Test suite (using nodeunit)
     tools/          Miscellaneous dev/upgrade/deployment tools and data.
@@ -36,11 +39,11 @@ ZooKeeper.  See docs/index.restdown for more information.
 
 To run the binder server:
 
-    git clone git@git.joyent.com:binder.git
-    cd eng
+    git clone git@github.com:joyent/binder.git
+    cd binder
     git submodule update --init
     make all
-	. ./env.sh
+    . ./env.sh
     ZK_HOST=<ZK IP address> node main.js 2>&1 | bunyan
 
 To update the docs, edit "docs/index.restdown" and run `make docs`
@@ -52,4 +55,3 @@ review.
 # Testing
 
     ZK_HOST=<ZK IP address> make test
-

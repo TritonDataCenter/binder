@@ -19,6 +19,9 @@ on top of [ZooKeeper](http://zookeeper.apache.org/), which binder uses to manage
 host/service membership, and views as the authoritative source for DNS
 information.
 
+Hosts register themselves into Zookeeper using an on-zone agent called
+[registrar](http://github.com/joyent/registrar).
+
 This documentation provides descriptions of the semantics binder provides, and
 notably the mechanisms by which systems participate in the ecosystem.
 
