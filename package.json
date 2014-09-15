@@ -22,6 +22,7 @@
                 "node": ">=0.8"
         },
         "devDependencies": {
+                "expiring-lru-cache": "2.1.0",
                 "nodeunit": "0.7.4"
         },
         "scripts": {
