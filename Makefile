@@ -17,7 +17,7 @@ NODEUNIT	:= ./node_modules/.bin/nodeunit
 #
 # Files
 #
-DOC_FILES	 = index.restdown
+DOC_FILES	 = index.md
 RESTDOWN_FLAGS   = --brand-dir=deps/restdown-brand-remora
 EXTRA_DOC_DEPS += deps/restdown-brand-remora/.git
 JS_FILES	:= $(shell ls *.js) $(shell find lib test -name '*.js')
