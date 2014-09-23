@@ -66,6 +66,9 @@ npm:
 $(NODEUNIT): | $(NPM_EXEC)
 	$(NPM) install
 
+# Needed for 'check-manifests' target.
+check:: deps/zookeeper-common/.git
+
 CLEAN_FILES += $(NODEUNIT) ./node_modules/nodeunit npm-shrinkwrap.json
 
 .PHONY: test
