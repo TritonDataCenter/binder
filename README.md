@@ -18,7 +18,7 @@ This repo contains 'binder', which is a DNS server implemented on top of
 ZooKeeper.  Hosts use [registrar](http://github.com/joyent/registrar) to
 register themselves into DNS.
 
-See docs/index.restdown for more information.
+See docs/index.md for more information.
 
 # Repository
 
@@ -46,7 +46,7 @@ To run the binder server:
     . ./env.sh
     ZK_HOST=<ZK IP address> node main.js 2>&1 | bunyan
 
-To update the docs, edit "docs/index.restdown" and run `make docs`
+To update the docs, edit "docs/index.md" and run `make docs`
 to update "docs/index.html".
 
 Before commiting/pushing run `make prepush` and, if possible, get a code
