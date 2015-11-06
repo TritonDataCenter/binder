@@ -9,7 +9,7 @@
  */
 
 var vasync = require('vasync');
-var zkplus = require('zkplus');
+var nzk = require('node-zookeeper-client');
 
 var core = require('../lib');
 
@@ -54,6 +54,19 @@ var SVC_VALUE = {
 before(function (callback) {
         var self = this;
 
+        function zkPut(path, obj, cb) {
+                var data = new Buffer(JSON.stringify(obj));
+                self.zk.create(path, data, function (err) {
+                        if (err && err.getCode() ===
+                                nzk.Exception.NODE_EXISTS) {
+
+                                self.zk.setData(path, data, cb);
+                        } else {
+                                cb(err);
+                        }
+                });
+        }
+
         var funcs = [
                 function setup(_, cb) {
                         helper.createServer(function (err, res) {
@@ -72,7 +85,7 @@ before(function (callback) {
                 },
 
                 function setServiceRecord(_, cb) {
-                        self.zk.update(PATH, SVC_VALUE, cb);
+                        zkPut(PATH, SVC_VALUE, cb);
                 },
 
                 function registerHosts(_, cb) {
@@ -85,7 +98,7 @@ before(function (callback) {
                                                 }
                                         };
                                         var p = PATH + '/' + k;
-                                        self.zk.put(p, obj, _cb);
+                                        zkPut(p, obj, _cb);
                                 },
                                 inputs: Object.keys(HOSTS)
                         }, cb);
@@ -101,7 +114,7 @@ before(function (callback) {
                                                 }
                                         };
                                         var p = PATH + '/' + k;
-                                        self.zk.put(p, obj, _cb);
+                                        zkPut(p, obj, _cb);
                                 },
                                 inputs: Object.keys(LBS)
                         }, cb);
@@ -121,8 +134,8 @@ before(function (callback) {
 
 after(function (callback) {
         var self = this;
-        this.zk.rmr('/com', function (err) {
-                self.zk.on('close', function () {
+        helper.zkRmr.call(this.zk, '/com', function (err) {
+                self.zk.on('disconnected', function () {
                         self.server.stop(callback);
                 });
                 self.zk.close();

@@ -9,7 +9,7 @@
  */
 
 var vasync = require('vasync');
-var zkplus = require('zkplus');
+var nzk = require('node-zookeeper-client');
 
 var core = require('../lib');
 
@@ -62,7 +62,16 @@ before(function (callback) {
                 },
 
                 function setRecord(_, cb) {
-                        self.zk.update(PATH, RECORD, cb);
+                        var data = new Buffer(JSON.stringify(RECORD));
+                        self.zk.create(PATH, data, function (err) {
+                                if (err && err.getCode() ===
+                                        nzk.Exception.NODE_EXISTS) {
+
+                                        self.zk.setData(PATH, data, cb);
+                                } else {
+                                        cb();
+                                }
+                        });
                 }
         ];
 
@@ -79,8 +88,8 @@ before(function (callback) {
 
 after(function (callback) {
         var self = this;
-        this.zk.rmr('/com', function (err) {
-                self.zk.on('close', function () {
+        helper.zkRmr.call(this.zk, '/com', function (err) {
+                self.zk.on('disconnected', function () {
                         self.server.stop(callback);
                 });
                 self.zk.close();
