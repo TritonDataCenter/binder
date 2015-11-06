@@ -15,7 +15,8 @@ var bunyan = require('bunyan');
 var Cache = require('expiring-lru-cache');
 var named = require('named');
 var vasync = require('vasync');
-var zkplus = require('zkplus');
+var nzk = require('node-zookeeper-client');
+var path = require('path');
 
 var core = require('../lib');
 var dig = require('./dig');
@@ -54,17 +55,11 @@ function createServer(callback) {
                 function connectToZK(_, cb) {
                         var host = process.env.ZK_HOST || 'localhost';
                         var port = process.env.ZK_PORT || 2181;
-                        zk = zkplus.createClient({
-                                log: log,
-                                servers: [ {
-                                        host: host,
-                                        port: port
-                                } ],
-                                timeout: 1000
+                        zk = nzk.createClient(host + ':' + port, {
+                                sessionTimeout: 1000
                         });
-
-
-                        zk.on('connect', cb);
+                        zk.once('connected', cb);
+                        zk.connect();
                 },
 
                 function newServer(_, cb) {
@@ -74,7 +69,9 @@ function createServer(callback) {
                                 log: log,
                                 name: process.argv[1],
                                 port: 1053,
-                                zkClient: zk
+                                zkClient: function () {
+                                        return (zk);
+                                }
                         });
                         server.start(cb);
                 }
@@ -90,7 +87,42 @@ function createServer(callback) {
         });
 }
 
+function zkRmr(ppath, cb) {
+        var self = this;
+        self.getChildren(ppath, function (err, kids) {
+                if (err) {
+                        cb(err);
+                        return;
+                }
+                kids = kids.map(function (k) {
+                        return (path.join(ppath, k));
+                });
+                if (kids.length > 0) {
+                        vasync.forEachParallel({
+                                func: zkRmr.bind(self),
+                                inputs: kids
+                        }, function (err2, res) {
+                                if (err2) {
+                                        cb(err2);
+                                        return;
+                                }
+                                done();
+                        });
+                } else {
+                        done();
+                }
 
+                function done() {
+                        self.remove(ppath, function (err2) {
+                                if (err2) {
+                                        cb(err2);
+                                        return;
+                                }
+                                cb(null);
+                        });
+                }
+        });
+}
 
 ///--- Exports
 
@@ -141,6 +173,7 @@ module.exports = {
 
         createCache: createCache,
         createLogger: createLogger,
-        createServer: createServer
+        createServer: createServer,
+        zkRmr: zkRmr
 
 };

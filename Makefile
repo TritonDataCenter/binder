@@ -9,12 +9,6 @@
 #
 
 #
-# Tools
-#
-BUNYAN		:= ./node_modules/.bin/bunyan
-NODEUNIT	:= ./node_modules/.bin/nodeunit
-
-#
 # Files
 #
 DOC_FILES	 = index.md
@@ -32,11 +26,15 @@ SMF_MANIFESTS_IN = smf/manifests/binder.xml.in deps/zookeeper-common/smf/manifes
 #
 
 NODE_PREBUILT_TAG	= zone
-NODE_PREBUILT_VERSION	:= v0.8.26
+NODE_PREBUILT_VERSION	:= v0.12.7
 NODE_PREBUILT_IMAGE	= fd2cc906-8938-11e3-beab-4359c665ac99
 
 include ./tools/mk/Makefile.defs
-include ./tools/mk/Makefile.node_prebuilt.defs
+ifeq ($(shell uname -s),SunOS)
+        include ./tools/mk/Makefile.node_prebuilt.defs
+else
+        include ./tools/mk/Makefile.node.defs
+endif
 include ./tools/mk/Makefile.node_deps.defs
 include ./tools/mk/Makefile.smf.defs
 
@@ -54,16 +52,16 @@ ROOT                    := $(shell pwd)
 RELSTAGEDIR             := /tmp/$(STAMP)
 
 #
+# Tools
+#
+BUNYAN		:= $(NODE) ./node_modules/.bin/bunyan
+NODEUNIT	:= $(NODE) ./node_modules/.bin/nodeunit
+
+#
 # Repo-specific targets
 #
 .PHONY: all
-all: $(SMF_MANIFESTS) | $(NODEUNIT) $(REPO_DEPS) scripts sdc-scripts
-	$(NPM) install
-
-npm:
-	$(NPM) install
-
-$(NODEUNIT): | $(NPM_EXEC)
+all: $(SMF_MANIFESTS) | $(NPM_EXEC) $(REPO_DEPS) scripts sdc-scripts
 	$(NPM) install
 
 # Needed for 'check-manifests' target.
@@ -72,7 +70,7 @@ check:: deps/zookeeper-common/.git
 CLEAN_FILES += $(NODEUNIT) ./node_modules/nodeunit npm-shrinkwrap.json
 
 .PHONY: test
-test: $(NODEUNIT)
+test: $(NODE_EXEC) all
 	$(NODEUNIT) test/*.test.js 2>&1 | $(BUNYAN)
 
 .PHONY: scripts
@@ -126,7 +124,11 @@ publish: release
 
 
 include ./tools/mk/Makefile.deps
-include ./tools/mk/Makefile.node_prebuilt.targ
+ifeq ($(shell uname -s),SunOS)
+        include ./tools/mk/Makefile.node_prebuilt.targ
+else
+        include ./tools/mk/Makefile.node.targ
+endif
 include ./tools/mk/Makefile.node_deps.targ
 include ./tools/mk/Makefile.smf.targ
 include ./tools/mk/Makefile.targ

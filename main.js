@@ -21,7 +21,7 @@ var named = require('named');
 var getopt = require('posix-getopt');
 var vasync = require('vasync');
 var xtend = require('xtend');
-var zkplus = require('zkplus');
+var nzk = require('node-zookeeper-client');
 
 var core = require('./lib');
 
@@ -80,31 +80,29 @@ function createZkClient(cb) {
                                 ZK = null;
                         }
                 });
-                zk.once('close', createZkClient);
+                zk.once('disconnected', createZkClient);
                 ZK = zk;
                 onFirst();
         }
 
         function onError(err) {
                 LOG.error(err, 'unable to connect to ZK');
-                zk.removeListener('connect', onConnect);
+                zk.removeListener('connected', onConnect);
                 zk.close();
                 zk.closeCalled = true;
                 setTimeout(createZkClient, 2000);
                 onFirst();
         }
 
-        var zk = zkplus.createClient({
-                connectTimeout: 1000,
-                host: (process.env.ZK_HOST || '127.0.0.1'),
-                log: LOG,
-                timeout: 30000
+        var zk = nzk.createClient(process.env.ZK_HOST || '127.0.0.1', {
+                spinDelay: 1000,
+                sessionTimeout: 30000
         });
         // Unfortunately, the zk client does a "removeAllListeners" on close,
         // so we keep track of when we call close.
         zk.closeCalled = false;
-        zk.once('connect', onConnect);
         zk.once('error', onError);
+        zk.once('connected', onConnect);
 
         zk.connect();
 }
