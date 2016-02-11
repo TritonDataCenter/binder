@@ -1,6 +1,11 @@
 {
   "registration": {
+{{#SERVICE_DOMAIN}}
     "domain": "{{{SERVICE_DOMAIN}}}",
+{{/SERVICE_DOMAIN}}
+{{^SERVICE_DOMAIN}}
+    "domain": "{{{SERVICE_NAME}}}",
+{{/SERVICE_DOMAIN}}
     "type": "rr_host",
     "service": {
       "type": "service",
