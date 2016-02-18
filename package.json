@@ -10,7 +10,7 @@
                 "bunyan": "1.5.1",
                 "clone": "0.1.1",
                 "lru-cache": "2.7.0",
-                "named": "git+https://github.com/arekinath/node-named#v1.0.2",
+                "named": "git+https://github.com/arekinath/node-named#v1.0.3",
                 "native-dns": "0.7.0",
                 "posix-getopt": "1.0.0",
                 "sdc-clients": "9.0.3",
