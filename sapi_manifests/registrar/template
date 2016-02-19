@@ -16,7 +16,8 @@
         "port": 53
       }
     },
-    "ttl": 60
+    "ttl": 60,
+    "ports": [53]
   },
   "zookeeper": {
     "servers": [
