@@ -43,8 +43,7 @@ var LOG = bunyan.createLogger({
         level: (process.env.LOG_LEVEL || 'info'),
         stream: process.stderr,
         serializers: {
-                err: bunyan.stdSerializers.err,
-                query: core.bunyan.querySerializer
+                err: bunyan.stdSerializers.err
         }
 });
 var ZK;
@@ -211,7 +210,9 @@ function run(opts) {
                                         log: LOG,
                                         port: opts.port,
                                         recursion: _.recursion,
-                                        zkClient: _.zkClient
+                                        zkClient: _.zkClient,
+                                        dnsDomain: opts.dnsDomain,
+                                        datacenterName: opts.datacenterName
                                 });
                                 _.server.start(subcb);
                         }
