@@ -1,6 +1,7 @@
 {
-    {{! BINDER_SERVICE is sdc specific, only render recursion block in sdc }}
-    {{#BINDER_SERVICE}}
+    {{#dns_domain}}
+    "dnsDomain": "{{{dns_domain}}}",
+    "datacenterName": "{{{datacenter_name}}}",
     "recursion": {
         "regionName": "{{{region_name}}}",
         "datacenterName": "{{{datacenter_name}}}",
@@ -22,5 +23,9 @@
             "connectTimeout": 3000
         }
     }
-    {{/BINDER_SERVICE}}
+    {{/dns_domain}}
+    {{^dns_domain}}
+    "dnsDomain": "{{{DNS_DOMAIN}}}",
+    "datacenterName": "{{{DATACENTER}}}"
+    {{/dns_domain}}
 }
