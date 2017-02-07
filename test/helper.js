@@ -13,7 +13,7 @@
 
 var bunyan = require('bunyan');
 var Cache = require('expiring-lru-cache');
-var named = require('named');
+var mname = require('mname');
 var vasync = require('vasync');
 var nzk = require('node-zookeeper-client');
 var path = require('path');
@@ -40,7 +40,7 @@ function createLogger(name, stream) {
                 name: name || process.argv[1],
                 stream: stream || process.stdout,
                 src: true,
-                serializers: named.bunyan.serializers
+                serializers: mname.bunyan.serializers
         });
         return (log);
 }

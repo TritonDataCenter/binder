@@ -17,7 +17,7 @@ var repl = require('repl');
 var bunyan = require('bunyan');
 var clone = require('clone');
 var LRU = require('lru-cache');
-var named = require('named');
+var mname = require('mname');
 var getopt = require('posix-getopt');
 var vasync = require('vasync');
 var xtend = require('xtend');
@@ -29,7 +29,7 @@ var core = require('./lib');
 
 ///--- Globals
 
-var ARecord = named.ARecord;
+var ARecord = mname.ARecord;
 
 var CACHE;
 var DEFAULTS = {
