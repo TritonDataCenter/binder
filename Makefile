@@ -5,15 +5,12 @@
 #
 
 #
-# Copyright (c) 2014, Joyent, Inc.
+# Copyright (c) 2017, Joyent, Inc.
 #
 
 #
 # Files
 #
-DOC_FILES	 = index.md
-RESTDOWN_FLAGS   = --brand-dir=deps/restdown-brand-remora
-EXTRA_DOC_DEPS += deps/restdown-brand-remora/.git
 JS_FILES	:= $(shell ls *.js) $(shell find lib test -name '*.js')
 JSL_CONF_NODE	 = tools/jsl.node.conf
 JSL_FILES_NODE   = $(JS_FILES)
@@ -79,7 +76,7 @@ scripts: deps/manta-scripts/.git
 	cp deps/manta-scripts/*.sh $(BUILD)/scripts
 
 .PHONY: release
-release: all docs $(SMF_MANIFESTS)
+release: all $(SMF_MANIFESTS)
 	@echo "Building $(RELEASE_TARBALL)"
 	@mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/binder
 	@mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/boot
@@ -99,7 +96,6 @@ release: all docs $(SMF_MANIFESTS)
 	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/binder/build
 	cp -r \
 		$(ROOT)/build/node \
-		$(ROOT)/build/docs \
 		$(ROOT)/build/scripts \
 		$(RELSTAGEDIR)/root/opt/smartdc/binder/build
 	mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/boot/scripts

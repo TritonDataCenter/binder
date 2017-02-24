@@ -5,37 +5,37 @@
 -->
 
 <!--
-    Copyright (c) 2014, Joyent, Inc.
+    Copyright (c) 2017, Joyent, Inc.
 -->
 
-# binder
+# Binder
 
-This repository is part of the Joyent SmartDataCenter project (SDC).  For
-contribution guidelines, issues, and general documentation, visit the main
-[SDC](http://github.com/joyent/sdc) project page.
+This repository is part of the Joyent Triton project. See the [contribution
+guidelines](https://github.com/joyent/triton/blob/master/CONTRIBUTING.md) --
+*Triton does not use GitHub PRs* -- and general documentation at the main
+[Triton project](https://github.com/joyent/triton) page.
 
-This repo contains 'binder', which is a DNS server implemented on top of
-ZooKeeper.  Hosts use [registrar](http://github.com/joyent/registrar) to
-register themselves into DNS.
+This repo contains Binder, which is a DNS server implemented on top of
+ZooKeeper.  Hosts use [Registrar](http://github.com/joyent/registrar) to
+register themselves into DNS.  **Binder's behavior, use in service discovery,
+and the ZooKeeper record format are described in the Registrar documentation.**
 
-See docs/index.md for more information.
+## Configuration
 
-# Repository
+As binder is expected to run on the same host as a ZooKeeper server, it is
+hard-coded to talk to `::1` to find ZK.  You can override this by setting the
+environment variable `ZK_HOST` to some other IP address.  This is really only
+for testing.  Also, it has a fixed in-memory cache of 1000 elements and 60s
+expiration time over ZK.  These can be overriden with the command line flags of
+`-s` and `-a`, respectively.  Although, again, it's defaulted, and hard-coded
+in SMF that way.  There is no config file for binder.
 
-    boot/           Configuration scripts on zone setup.
-    deps/           Git submodules (node et al).
-    docs/           Project docs (restdown)
-    lib/            Source files.
-    node_modules/   Node.js deps, populated at build time.
-    sapi_manifests/ SAPI manifests for zone configuration.
-    smf/manifests   SMF manifests
-    test/           Test suite (using nodeunit)
-    tools/          Miscellaneous dev/upgrade/deployment tools and data.
-    Makefile
-    package.json    npm module info (holds the project version)
-    README.md
+## Troubleshooting
 
-# Development
+You can hack the SMF manifest in /opt/smartdc/binder/smf/manifests/binder.xml
+and add `-d 2` to spew all nature of logs via SMF.
+
+## Development
 
 To run the binder server:
 
@@ -45,12 +45,6 @@ To run the binder server:
     make all
     . ./env.sh
     ZK_HOST=<ZK IP address> node main.js 2>&1 | bunyan
-
-To update the docs, edit "docs/index.md" and run `make docs`
-to update "docs/index.html".
-
-Before commiting/pushing run `make prepush` and, if possible, get a code
-review.
 
 # Testing
 
