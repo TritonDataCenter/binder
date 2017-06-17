@@ -17,11 +17,10 @@ var mname = require('mname');
 var vasync = require('vasync');
 var nzk = require('node-zookeeper-client');
 var path = require('path');
+var mod_zkstream = require('zkstream');
 
 var core = require('../lib');
 var dig = require('./dig');
-
-
 
 ///--- Helpers
 
@@ -36,7 +35,7 @@ function createCache(name) {
 
 function createLogger(name, stream) {
         var log = bunyan.createLogger({
-                level: (process.env.LOG_LEVEL || 'warn'),
+                level: (process.env.LOG_LEVEL || 'info'),
                 name: name || process.argv[1],
                 stream: stream || process.stdout,
                 src: true,
@@ -48,48 +47,90 @@ function createLogger(name, stream) {
 
 function createServer(callback) {
         var log = createLogger();
-        var zk;
-        var server;
+        var arg = {};
 
         var funcs = [
                 function connectToZK(_, cb) {
-                        var host = process.env.ZK_HOST || 'localhost';
+                        var host = process.env.ZK_HOST || '127.0.0.1';
                         var port = process.env.ZK_PORT || 2181;
-                        zk = nzk.createClient(host + ':' + port, {
-                                sessionTimeout: 1000
+                        _.zk = new mod_zkstream.Client({
+                                address: host,
+                                port: port,
+                                timeout: 10000
                         });
-                        zk.once('connected', cb);
-                        zk.connect();
+                        _.zk.once('connect', cb);
+                },
+
+                function makeZkCache(_, cb) {
+                        _.zkCache = new core.ZKCache({
+                                domain: 'foo.com',
+                                log: log
+                        });
+                        cb();
                 },
 
                 function newServer(_, cb) {
-                        server = core.createServer({
-                                cache: createCache(),
+                        _.server = core.createServer({
                                 host: '::1',
                                 log: log,
                                 name: process.argv[1],
                                 port: 1053,
-                                zkClient: function () {
-                                        return (zk);
-                                }
+                                dnsDomain: 'foo.com',
+                                zkCache: _.zkCache
                         });
-                        server.start(cb);
+                        _.server.start(cb);
                 }
 
         ];
 
-        vasync.pipeline({funcs: funcs}, function (err) {
+        vasync.pipeline({
+                funcs: funcs,
+                arg: arg
+        }, function (err) {
                 if (err) {
                         callback(err);
                 } else {
-                        callback(null, {server: server, zk: zk});
+                        callback(null, arg);
                 }
         });
 }
 
+function zkMkdirP(dpath, cb) {
+        var zk = this;
+        var sofar = '';
+        var parts = [];
+        dpath.split('/').forEach(function (part) {
+                if (part !== '') {
+                        sofar += '/' + part;
+                        parts.push(sofar);
+                }
+        });
+        var b = new Buffer('null', 'utf-8');
+        vasync.forEachPipeline({
+                func: function (dir, ccb) {
+                        if (dir === '/') {
+                                ccb();
+                                return;
+                        }
+                        zk.create(dir, b, {}, function (err) {
+                                if (err && err.code === 'NODE_EXISTS') {
+                                        ccb();
+                                        return;
+                                }
+                                if (err) {
+                                        ccb(err);
+                                        return;
+                                }
+                                ccb();
+                        });
+                },
+                inputs: parts
+        }, cb);
+}
+
 function zkRmr(ppath, cb) {
         var self = this;
-        self.getChildren(ppath, function (err, kids) {
+        self.list(ppath, function (err, kids) {
                 if (err) {
                         cb(err);
                         return;
@@ -113,7 +154,7 @@ function zkRmr(ppath, cb) {
                 }
 
                 function done() {
-                        self.remove(ppath, function (err2) {
+                        self.delete(ppath, -1, function (err2) {
                                 if (err2) {
                                         cb(err2);
                                         return;
@@ -174,6 +215,7 @@ module.exports = {
         createCache: createCache,
         createLogger: createLogger,
         createServer: createServer,
-        zkRmr: zkRmr
+        zkRmr: zkRmr,
+        zkMkdirP: zkMkdirP
 
 };

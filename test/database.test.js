@@ -9,7 +9,7 @@
  */
 
 var vasync = require('vasync');
-var nzk = require('node-zookeeper-client');
+var mod_zkstream = require('zkstream');
 
 var core = require('../lib');
 
@@ -52,22 +52,21 @@ before(function (callback) {
                                 } else {
                                         self.server = res.server;
                                         self.zk = res.zk;
+                                        self.zkCache = res.zkCache;
                                         cb();
                                 }
                         });
                 },
 
                 function mkdir(_, cb) {
-                        self.zk.mkdirp(PATH, cb);
+                        helper.zkMkdirP.call(self.zk, PATH, cb);
                 },
 
                 function setRecord(_, cb) {
                         var data = new Buffer(JSON.stringify(RECORD));
-                        self.zk.create(PATH, data, function (err) {
-                                if (err && err.getCode() ===
-                                        nzk.Exception.NODE_EXISTS) {
-
-                                        self.zk.setData(PATH, data, cb);
+                        self.zk.create(PATH, data, {}, function (err) {
+                                if (err && err.code === 'NODE_EXISTS') {
+                                        self.zk.set(PATH, data, -1, cb);
                                 } else {
                                         cb();
                                 }
@@ -89,9 +88,10 @@ before(function (callback) {
 after(function (callback) {
         var self = this;
         helper.zkRmr.call(this.zk, '/com', function (err) {
-                self.zk.on('disconnected', function () {
+                self.zk.on('close', function () {
                         self.server.stop(callback);
                 });
+                self.zkCache.stop();
                 self.zk.close();
         });
 });
@@ -105,7 +105,7 @@ test('resolve record ok', function (t) {
                 t.equal(results.answers.length, 1);
                 t.deepEqual(results.answers[0], {
                         name: DOMAIN,
-                        ttl: 5,
+                        ttl: 30,
                         type: 'A',
                         target: '192.168.0.1'
                 });

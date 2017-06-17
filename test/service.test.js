@@ -9,7 +9,7 @@
  */
 
 var vasync = require('vasync');
-var nzk = require('node-zookeeper-client');
+var mod_zkstream = require('zkstream');
 
 var core = require('../lib');
 
@@ -35,8 +35,8 @@ var LBS = {
         'lbA': '10.0.1.2',
         'lbB': '10.0.1.3'
 };
-var PATH = '/com/joyent/foo';
-var SVC = 'foo.joyent.com';
+var PATH = '/com/foo/bar';
+var SVC = 'bar.foo.com';
 var SVC_VALUE = {
         type: 'service',
         service: {
@@ -56,11 +56,9 @@ before(function (callback) {
 
         function zkPut(path, obj, cb) {
                 var data = new Buffer(JSON.stringify(obj));
-                self.zk.create(path, data, function (err) {
-                        if (err && err.getCode() ===
-                                nzk.Exception.NODE_EXISTS) {
-
-                                self.zk.setData(path, data, cb);
+                self.zk.create(path, data, {}, function (err) {
+                        if (err && err.code === 'NODE_EXISTS') {
+                                self.zk.set(path, data, -1, cb);
                         } else {
                                 cb(err);
                         }
@@ -75,13 +73,14 @@ before(function (callback) {
                                 } else {
                                         self.server = res.server;
                                         self.zk = res.zk;
+                                        self.zkCache = res.zkCache;
                                         cb();
                                 }
                         });
                 },
 
                 function mkdir(_, cb) {
-                        self.zk.mkdirp(PATH, cb);
+                        helper.zkMkdirP.call(self.zk, PATH, cb);
                 },
 
                 function setServiceRecord(_, cb) {
@@ -127,7 +126,7 @@ before(function (callback) {
                         process.exit(1);
                 }
 
-                callback();
+                setTimeout(callback, 500);
         });
 });
 
@@ -135,9 +134,10 @@ before(function (callback) {
 after(function (callback) {
         var self = this;
         helper.zkRmr.call(this.zk, '/com', function (err) {
-                self.zk.on('disconnected', function () {
+                self.zk.on('close', function () {
                         self.server.stop(callback);
                 });
+                self.zkCache.stop();
                 self.zk.close();
         });
 });
