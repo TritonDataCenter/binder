@@ -21,11 +21,8 @@ var mname = require('mname');
 var getopt = require('posix-getopt');
 var vasync = require('vasync');
 var xtend = require('xtend');
-var nzk = require('node-zookeeper-client');
 
 var core = require('./lib');
-
-
 
 ///--- Globals
 
@@ -41,71 +38,12 @@ var NAME = 'binder';
 var LOG = bunyan.createLogger({
         name: NAME,
         level: (process.env.LOG_LEVEL || 'info'),
-        stream: process.stderr,
         serializers: {
                 err: bunyan.stdSerializers.err
         }
 });
-var ZK;
-
-
 
 ///--- Internal Functions
-
-function createZkClient(cb) {
-        //We want to continue on with init even if ZK isn't available, but we
-        // still want to come up cleanly if we can.
-        var calledback = false;
-        function onFirst() {
-                if (!calledback && cb) {
-                        calledback = true;
-                        return (cb());
-                }
-        }
-
-        function onConnect() {
-                zk.removeListener('error', onError);
-                LOG.debug('ZK client ready');
-
-                // Since there may be multiple outstanding DNS requests
-                // holding a reference to ZK, we can't 'once' the error.
-                zk.on('error', function (err) {
-                        LOG.error(err, 'ZooKeeper client error');
-                        if (!zk.closeCalled) {
-                                zk.close();
-                                zk.closeCalled = true;
-                        }
-                        if (ZK === zk) {
-                                ZK = null;
-                        }
-                });
-                zk.once('disconnected', createZkClient);
-                ZK = zk;
-                onFirst();
-        }
-
-        function onError(err) {
-                LOG.error(err, 'unable to connect to ZK');
-                zk.removeListener('connected', onConnect);
-                zk.close();
-                zk.closeCalled = true;
-                setTimeout(createZkClient, 2000);
-                onFirst();
-        }
-
-        var zk = nzk.createClient(process.env.ZK_HOST || '127.0.0.1', {
-                spinDelay: 1000,
-                sessionTimeout: 30000
-        });
-        // Unfortunately, the zk client does a "removeAllListeners" on close,
-        // so we keep track of when we call close.
-        zk.closeCalled = false;
-        zk.once('error', onError);
-        zk.once('connected', onConnect);
-
-        zk.connect();
-}
-
 
 function parseOptions() {
         var option;
@@ -179,38 +117,30 @@ function run(opts) {
         vasync.pipeline({
                 'arg': {},
                 'funcs': [
-                        function initCache(_, subcb) {
-                                _.cache = new LRU({
-                                        max: opts.size,
-                                        maxAge: opts.expiry
+                        function initZk(_, subcb) {
+                                _.zkCache = new core.ZKCache({
+                                        log: LOG,
+                                        domain: opts.dnsDomain
                                 });
                                 subcb();
-                        },
-                        function initZk(_, subcb) {
-                                _.zkClient = function () {
-                                        return (ZK);
-                                };
-                                createZkClient(subcb);
                         },
                         function initRecursion(_, subcb) {
                                 if (!opts.recursion) {
                                         return (subcb());
                                 }
                                 opts.recursion.log = LOG;
-                                opts.recursion.zkClient = _.zkClient;
-                                opts.recursion.cache = _.cache;
+                                opts.recursion.zkCache = _.zkCache;
                                 _.recursion = new core.Recursion(
                                         opts.recursion);
                                 _.recursion.on('ready', subcb);
                         },
                         function initServer(_, subcb) {
                                 _.server = core.createServer({
-                                        cache: _.cache,
                                         name: NAME,
                                         log: LOG,
                                         port: opts.port,
                                         recursion: _.recursion,
-                                        zkClient: _.zkClient,
+                                        zkCache: _.zkCache,
                                         dnsDomain: opts.dnsDomain,
                                         datacenterName: opts.datacenterName
                                 });
