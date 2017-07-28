@@ -6,18 +6,18 @@
   "license": "MPL-2.0",
   "private": true,
   "dependencies": {
-    "assert-plus": "0.1.5",
-    "bunyan": "1.5.1",
-    "clone": "0.1.1",
-    "lru-cache": "2.7.0",
+    "assert-plus": "1.0.0",
+    "bunyan": "1.8.10",
+    "clone": "2.1.1",
+    "lru-cache": "4.1.1",
     "mname": "1.3.5",
     "mooremachine": "^2.1.0",
     "native-dns": "0.7.0",
-    "posix-getopt": "1.0.0",
+    "posix-getopt": "1.2.0",
     "sdc-clients": "9.0.3",
-    "vasync": "1.6.3",
+    "vasync": "1.6.4",
     "verror": "^1.10.0",
-    "xtend": "1.0.3",
+    "xtend": "4.0.1",
     "zkstream": "0.9.0"
   },
   "engines": {
@@ -25,7 +25,7 @@
   },
   "devDependencies": {
     "expiring-lru-cache": "2.1.0",
-    "nodeunit": "0.9.0"
+    "nodeunit": "0.11.1"
   },
   "scripts": {
     "start": "node ./main.js"
