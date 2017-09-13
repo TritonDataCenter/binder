@@ -12,10 +12,10 @@
     "lru-cache": "2.7.0",
     "mname": "1.3.5",
     "mooremachine": "^2.1.0",
-    "native-dns": "0.7.0",
+    "mname-client": "0.6.0",
     "posix-getopt": "1.0.0",
     "sdc-clients": "9.0.3",
-    "vasync": "1.6.3",
+    "vasync": "2.1.0",
     "verror": "^1.10.0",
     "xtend": "1.0.3",
     "zkstream": "0.9.0"

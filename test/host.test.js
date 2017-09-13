@@ -99,6 +99,7 @@ test('resolve record ok', function (t) {
         dig(RECORD, 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
+                t.equal(results.status, 'NOERROR');
                 t.ok(results.answers);
                 t.equal(results.answers.length, 1);
                 t.deepEqual(results.answers[0], {
@@ -107,6 +108,60 @@ test('resolve record ok', function (t) {
                         type: 'A',
                         target: ADDR
                 });
+                t.end();
+        });
+});
+
+test('resolve reverse record ok', function (t) {
+        var dom = ADDR.split('.').reverse().join('.') + '.in-addr.arpa';
+        dig(dom, 'PTR', function (err, results) {
+                t.ifError(err);
+                t.ok(results);
+                t.equal(results.status, 'NOERROR');
+                t.ok(results.answers);
+                t.equal(results.answers.length, 1);
+                t.deepEqual(results.answers[0], {
+                        name: dom,
+                        ttl: 30,
+                        type: 'PTR',
+                        target: RECORD + '.'
+                });
+                t.end();
+        });
+});
+
+test('reverse record not found', function (t) {
+        var dom = '1.2.3.4.in-addr.arpa';
+        dig(dom, 'PTR', function (err, results) {
+                t.ifError(err);
+                t.ok(results);
+                t.equal(results.status, 'REFUSED');
+                t.ok(results.answers);
+                t.equal(results.answers.length, 0);
+                t.end();
+        });
+});
+
+test('reverse record invalid', function (t) {
+        var dom = 'foobar.com';
+        dig(dom, 'PTR', function (err, results) {
+                t.ifError(err);
+                t.ok(results);
+                t.equal(results.status, 'REFUSED');
+                t.ok(results.answers);
+                t.equal(results.answers.length, 0);
+                t.end();
+        });
+});
+
+test('reverse record invalid ip', function (t) {
+        var dom = '1.2.in-addr.arpa';
+        dig(dom, 'PTR', function (err, results) {
+                t.ifError(err);
+                t.ok(results);
+                t.equal(results.status, 'REFUSED');
+                t.ok(results.answers);
+                t.equal(results.answers.length, 0);
                 t.end();
         });
 });
