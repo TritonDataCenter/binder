@@ -147,6 +147,7 @@ test('resolve record ok', function (t) {
         dig(SVC, 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
+                t.equal(results.status, 'NOERROR');
                 t.ok(results.answers);
                 t.equal(results.answers.length, 2);
                 results.answers.forEach(function (a) {
@@ -159,11 +160,84 @@ test('resolve record ok', function (t) {
         });
 });
 
+test('resolve SRV records ok', function (t) {
+        dig('_http._tcp.' + SVC, 'SRV', function (err, results) {
+                t.ifError(err);
+                t.ok(results);
+                t.equal(results.status, 'NOERROR');
+                t.ok(results.answers);
+                t.equal(results.answers.length, 2);
+                results.answers.forEach(function (a) {
+                        t.equal(a.ttl, 60);
+                        t.equal(a.type, 'SRV');
+                        t.equal(a.port, 80);
+                        t.ok(/lb[AB]\.bar\.foo\.com\.?/.test(a.target));
+                });
+                t.end();
+        });
+});
+
+test('SRV wrong service', function (t) {
+        dig('_http._udp.' + SVC, 'SRV', function (err, results) {
+                t.ifError(err);
+                t.ok(results);
+                t.equal(results.status, 'NXDOMAIN');
+                t.ok(results.answers);
+                t.equal(results.answers.length, 0);
+                t.end();
+        });
+});
+
+test('SRV not exist', function (t) {
+        dig('_http._tcp.foobar.foo.com', 'SRV', function (err, results) {
+                t.ifError(err);
+                t.ok(results);
+                t.equal(results.status, 'REFUSED');
+                t.ok(results.answers);
+                t.equal(results.answers.length, 0);
+                t.end();
+        });
+});
+
+test('resolve member record ok', function (t) {
+        dig('lba.' + SVC, 'A', function (err, results) {
+                t.ifError(err);
+                t.ok(results);
+                t.equal(results.status, 'NOERROR');
+                t.ok(results.answers);
+                t.equal(results.answers.length, 1);
+                t.deepEqual(results.answers[0], {
+                        name: 'lba.' + SVC,
+                        ttl: 30,
+                        type: 'A',
+                        target: LBS['lbA']
+                });
+                t.end();
+        });
+});
+
+test('resolve reverse record ok', function (t) {
+        var dom = LBS['lbA'].split('.').reverse().join('.') + '.in-addr.arpa';
+        dig(dom, 'PTR', function (err, results) {
+                t.ifError(err);
+                t.ok(results);
+                t.equal(results.status, 'NOERROR');
+                t.ok(results.answers);
+                t.equal(results.answers.length, 1);
+                var a = results.answers[0];
+                t.equal(a.name, dom);
+                t.equal(a.type, 'PTR');
+                t.equal(a.target, 'lba.bar.foo.com.');
+                t.end();
+        });
+});
+
 
 test('resolve record not found', function (t) {
         dig('blah.blah', 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
+                t.equal(results.status, 'REFUSED');
                 t.ok(results.answers);
                 t.equal(results.answers.length, 0);
                 t.end();

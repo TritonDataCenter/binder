@@ -37,6 +37,11 @@ function parseAnswer(tokens) {
                 type:   t[3],
                 target: t[4]
         };
+        if (t[3] === 'SRV') {
+                r.target = t[7];
+                r.port = parseInt(t[6], 10);
+                r.priority = parseInt(t[5], 10);
+        }
 
         return (r);
 }
@@ -57,6 +62,8 @@ function parseDig(output) {
         lines.forEach(function (l) {
                 if (l === '') {
                         section = undefined;
+                } else if (/^;; ->>HEADER<<-/.test(l)) {
+                        section = 'header';
                 } else if (/^;; QUESTION SECTION:/.test(l)) {
                         section = 'question';
                 } else if (/^;; ANSWER SECTION:/.test(l)) {
@@ -65,6 +72,13 @@ function parseDig(output) {
                         section = 'additional';
                 } else if (/^;; AUTHORITY SECTION:/.test(l)) {
                         section = 'authority';
+                }
+
+                if (section === 'header') {
+                        var m = l.match(/, status: ([A-Z]+), /);
+                        if (m && m[1]) {
+                                results.status = m[1];
+                        }
                 }
 
                 if (section === 'question') {
@@ -76,7 +90,7 @@ function parseDig(output) {
 
                 if (section === 'answer') {
                         if (/^([_A-Za-z0-9])+/.test(l)) {
-                                var tokens = l.match(/(.*)/)[0].split(/\t/);
+                                var tokens = l.split(/[\t ]+/);
                                 var answer = parseAnswer(tokens);
                                 if (answer)
                                         results.answers.push(answer);
