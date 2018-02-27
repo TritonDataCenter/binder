@@ -23,8 +23,8 @@ SMF_MANIFESTS_IN = smf/manifests/binder.xml.in deps/zookeeper-common/smf/manifes
 #
 
 NODE_PREBUILT_TAG	= zone
-NODE_PREBUILT_VERSION	:= v0.12.9
-NODE_PREBUILT_IMAGE	= fd2cc906-8938-11e3-beab-4359c665ac99
+NODE_PREBUILT_VERSION	:= v0.12.17
+NODE_PREBUILT_IMAGE	= 18b094b0-eb01-11e5-80c1-175dac7ddf02
 
 include ./tools/mk/Makefile.defs
 ifeq ($(shell uname -s),SunOS)
