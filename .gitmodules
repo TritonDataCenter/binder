@@ -13,3 +13,6 @@
 [submodule "deps/zookeeper-common"]
 	path = deps/zookeeper-common
 	url = https://github.com/joyent/zookeeper-common.git
+[submodule "deps/mname-balancer"]
+	path = deps/mname-balancer
+	url = https://github.com/joyent/mname-balancer.git
