@@ -49,12 +49,16 @@ var LOG = bunyan.createLogger({
 function parseOptions() {
         var option;
         var opts = {};
-        var parser = new getopt.BasicParser('hva:s:p:f:', process.argv);
+        var parser = new getopt.BasicParser('hva:b:s:p:f:', process.argv);
 
         while ((option = parser.getopt()) !== undefined) {
                 switch (option.option) {
                 case 'a':
                         opts.expiry = parseInt(option.optarg, 10);
+                        break;
+
+                case 'b':
+                        opts.balancerSocket = option.optarg;
                         break;
 
                 case 'f':
@@ -140,6 +144,7 @@ function run(opts) {
                                         name: NAME,
                                         log: LOG,
                                         port: opts.port,
+                                        balancerSocket: opts.balancerSocket,
                                         recursion: _.recursion,
                                         zkCache: _.zkCache,
                                         dnsDomain: opts.dnsDomain,

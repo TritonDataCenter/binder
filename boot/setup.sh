@@ -54,11 +54,19 @@ if [[ ${FLAVOR} == "manta" ]]; then
 
     zk_common_import ${SVC_ROOT}
 
-    echo "Installing binder"
-    svccfg import ${SVC_ROOT}/smf/manifests/binder.xml
-    # || \
-    #     fatal "unable to import binder"
-    # svcadm enable binder || fatal "unable to start binder"
+    echo "Installing binder balancer SMF service"
+    svccfg import ${SVC_ROOT}/smf/manifests/binder-balancer.xml
+
+    echo "Installing binder SMF service"
+    if ! svccfg import ${SVC_ROOT}/smf/manifests/multi-binder.xml; then
+        fatal "unable to import binder"
+    fi
+
+    echo "Configuring instances of binder SMF service"
+    if ! /opt/smartdc/binder/lib/smf_adjust -s 'svc:/manta/application/binder' \
+      -b binder -B 5301 -i 1; then
+        fatal "unable to configure instances of binder SMF service"
+    fi
 
     manta_common_setup_end
 
@@ -77,7 +85,7 @@ else # FLAVOR == "sdc"
     zk_common_import ${SVC_ROOT}
 
     echo "Importing binder SMF manifest."
-    svccfg import /opt/smartdc/binder/smf/manifests/binder.xml \
+    svccfg import /opt/smartdc/binder/smf/manifests/single-binder.xml \
         || fatal "unable to import binder manifest"
     svcadm enable binder || fatal "unable to start binder"
 
