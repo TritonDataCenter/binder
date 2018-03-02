@@ -1,6 +1,27 @@
 #ifndef	_UTILS_H
 #define	_UTILS_H
 
+/*
+ * It would appear that some of these definitions in "sys/time.h" have not
+ * existed for as long as we would like.  For now, replicate them here if the
+ * system does not provide them.
+ */
+#ifndef	SEC
+#define	SEC				1
+#endif
+#ifndef	MILLISEC
+#define	MILLISEC			1000
+#endif
+#ifndef	NANOSEC
+#define	NANOSEC				1000000000LL
+#endif
+#ifndef	SEC2NSEC
+#define	SEC2NSEC(m)			((hrtime_t)(m) * (NANOSEC / SEC))
+#endif
+#ifndef	MSEC2NSEC
+#define	MSEC2NSEC(m)			((hrtime_t)(m) * (NANOSEC / MILLISEC))
+#endif
+
 typedef struct verror verror_t;
 
 extern void sleep_ms(int ms);
