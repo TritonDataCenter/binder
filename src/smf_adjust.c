@@ -20,7 +20,7 @@
 
 
 
-#define	BINDER_SOCKET_PATH	"/var/run/binder/sockets/%lld"
+#define	BINDER_SOCKET_PATH	"/var/run/binder/sockets/%ld"
 
 #define	SCF_SNAPSHOT_RUNNING	"running"
 
