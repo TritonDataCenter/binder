@@ -398,7 +398,7 @@ refresh:
 }
 
 static int
-enable_instance(smfx_t *smfx, scf_instance_t *i)
+enable_instance(smfx_t *smfx, scf_instance_t *i, bool wait_for_online)
 {
 	char *fmri;
 	if (smfx_instance_fmri(smfx, i, &fmri) != 0) {
@@ -408,43 +408,56 @@ enable_instance(smfx_t *smfx, scf_instance_t *i)
 
 	hrtime_t start = gethrtime();
 
-	for (;;) {
-		char *st;
+	char *st = NULL;
+again:
+	free(st);
+	if ((st = smf_get_state(fmri)) == NULL) {
+		fatal_scf("smf_get_state");
+	}
 
-		if ((st = smf_get_state(fmri)) == NULL) {
-			fatal_scf("smf_get_state");
+	if (strcmp(st, SCF_STATE_STRING_ONLINE) == 0) {
+		/*
+		 * The service is already online; no action is required.
+		 */
+		goto done;
+	}
+
+	if (strcmp(st, SCF_STATE_STRING_MAINT) == 0 ||
+	    strcmp(st, SCF_STATE_STRING_DEGRADED) == 0) {
+		/*
+		 * The service is in the maintenance or degraded state.
+		 * Attempt to clear this state.
+		 */
+		if (smf_restore_instance(fmri) != 0) {
+			fatal_scf("smf_restore_instance");
 		}
 
-		if (strcmp(st, SCF_STATE_STRING_MAINT) == 0 ||
-		    strcmp(st, SCF_STATE_STRING_DEGRADED) == 0) {
-			/*
-			 * The service is in the maintenance or degraded state.
-			 * Attempt to clear this state.
-			 */
-			if (smf_restore_instance(fmri) != 0) {
-				fatal_scf("smf_restore_instance");
-			}
+		goto wait;
+	}
 
-		} else if (strcmp(st, SCF_STATE_STRING_ONLINE) == 0) {
-			/*
-			 * We're finished!
-			 */
-			break;
-
-		} else if (strcmp(st, SCF_STATE_STRING_DISABLED) == 0) {
-			/*
-			 * The service is disabled.  Refresh the instance to
-			 * ensure visibility of the latest property group
-			 * changes, and then enable the instance.
-			 */
-			if (smf_refresh_instance(fmri) != 0) {
-				fatal_scf("smf_restore_instance");
-			}
-			if (smf_enable_instance(fmri, 0) != 0) {
-				fatal_scf("smf_restore_instance");
-			}
+	if (strcmp(st, SCF_STATE_STRING_DISABLED) == 0) {
+		/*
+		 * The service is disabled.  Refresh the instance to ensure
+		 * visibility of the latest property group changes, and then
+		 * enable the instance.
+		 */
+		if (smf_refresh_instance(fmri) != 0) {
+			fatal_scf("smf_restore_instance");
+		}
+		if (smf_enable_instance(fmri, 0) != 0) {
+			fatal_scf("smf_restore_instance");
 		}
 
+		goto wait;
+	}
+
+	/*
+	 * The service is otherwise in an intermediate state, such as "offline"
+	 * or "uninitialized".
+	 */
+
+wait:
+	if (wait_for_online) {
 		/*
 		 * Don't wait more than 60 seconds for this situation to correct
 		 * itself.
@@ -452,14 +465,18 @@ enable_instance(smfx_t *smfx, scf_instance_t *i)
 		hrtime_t duration = gethrtime() - start;
 		if (duration > SEC2NSEC(60)) {
 			free(fmri);
+			free(st);
 			errno = ETIMEDOUT;
 			return (-1);
 		}
 		
 		sleep_ms(100);
+		goto again;
 	}
 
+done:
 	free(fmri);
+	free(st);
 	return (0);
 }
 
@@ -793,8 +810,15 @@ main(int argc, char *argv[])
 	long base_number = 1;
 	smfx_t *smfx = NULL;
 	char smfx_msg[SMFX_ERROR_SIZE];
+	bool wait_for_start = false;
 
-	while ((c = getopt(argc, argv, ":B:b:i:s:")) != -1) {
+	/*
+	 * We would like each line emitted by printf(3C) to appear promptly in
+	 * the log file that this command is generally redirected to.
+	 */
+	(void) setlinebuf(stdout);
+
+	while ((c = getopt(argc, argv, ":B:b:i:s:w")) != -1) {
 		switch (c) {
 		case 'B':
 			if (parse_long(optarg, &base_number, 10) != 0 ||
@@ -818,6 +842,10 @@ main(int argc, char *argv[])
 				err(1, "-%c requires integer from 0 to 32",
 				    optopt);
 			}
+			break;
+
+		case 'w':
+			wait_for_start = true;
 			break;
 
 		case ':':
@@ -1004,7 +1032,8 @@ main(int argc, char *argv[])
 				err(1, "configure_instance");
 			}
 
-			if (enable_instance(smfx, i->inst_instance) != 0) {
+			if (enable_instance(smfx, i->inst_instance,
+			    wait_for_start) != 0) {
 				if (errno == ETIMEDOUT) {
 					errx(1, "timed out enabling instance "
 					    "\"%s\"", i->inst_name);
