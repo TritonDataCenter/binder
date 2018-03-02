@@ -10,7 +10,7 @@
     Copyright (c) 2018, Joyent, Inc.
 -->
 
-<service_bundle type="manifest" name="binder">
+<service_bundle type="manifest" name="binder-balancer">
     <service name="manta/application/binder-balancer" type="service"
       version="1">
         <create_default_instance enabled="true" />
@@ -37,8 +37,8 @@
         </dependency>
 
         <exec_method type="method" name="start" timeout_seconds="10"
-          exec="mkdir -p /tmp/bbal_sockets &amp;&amp;
-          /opt/smartdc/binder/lib/balancer -s /tmp/bbal_sockets &amp;">
+          exec="/opt/smartdc/binder/lib/balancer -s /var/run/binder/sockets
+          &amp;">
             <method_context working_directory="/tmp">
                 <method_credential user="nobody" group="nobody"
                   privileges="basic,net_privaddr" />

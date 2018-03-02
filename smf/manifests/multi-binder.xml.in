@@ -33,6 +33,14 @@
 	    <service_fmri value="svc:/smartdc/mdata:execute" />
 	</dependency>
 
+	<dependency name="mksockdir"
+		    grouping="require_all"
+		    restart_on="none"
+		    type="service">
+		<service_fmri
+		    value="svc:/manta/application/binder-mksockdir:default" />
+	</dependency>
+
         <dependency name="config-agent"
                     grouping="optional_all"
                     restart_on="none"

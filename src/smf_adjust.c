@@ -19,6 +19,9 @@
 #include "nvlist_equal.h"
 
 
+
+#define	BINDER_SOCKET_PATH	"/var/run/binder/sockets/%lld"
+
 #define	SCF_SNAPSHOT_RUNNING	"running"
 
 static int nvlist_to_pg(scf_propertygroup_t *pg, nvlist_t *targ);
@@ -455,6 +458,10 @@ again:
 	 * The service is otherwise in an intermediate state, such as "offline"
 	 * or "uninitialized".
 	 */
+	if (!wait_for_online) {
+		printf("WARNING: not waiting, but \"%s\" in state \"%s\"\n",
+		    fmri, st);
+	}
 
 wait:
 	if (wait_for_online) {
@@ -1014,7 +1021,7 @@ main(int argc, char *argv[])
 			}
 
 			char buf[1000];
-			snprintf(buf, sizeof (buf), "/tmp/bbal_sockets/%ld",
+			snprintf(buf, sizeof (buf), BINDER_SOCKET_PATH,
 			    i->inst_number);
 			if ((r = nvlist_add_string(targ, "socket_path", buf)) !=
 			    0) {

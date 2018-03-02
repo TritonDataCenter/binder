@@ -1,0 +1,20 @@
+#!/bin/bash
+
+SOCKDIR='/var/run/binder/sockets'
+
+if ! /usr/bin/mkdir -p "$SOCKDIR"; then
+	printf 'ERROR: could not create "%s"\n' "$SOCKDIR" >&2
+	exit 1
+fi
+
+if ! /usr/bin/chown nobody:nobody "$SOCKDIR"; then
+	printf 'ERROR: could not chown "%s" to "nobody"\n' "$SOCKDIR" >&2
+	exit 1
+fi
+
+if ! /usr/bin/chmod 770 "$SOCKDIR"; then
+	printf 'ERROR: could not chmod 770 "%s"\n' "$SOCKDIR" >&2
+	exit 1
+fi
+
+exit 0

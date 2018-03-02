@@ -5,7 +5,7 @@
 #
 
 #
-# Copyright (c) 2017, Joyent, Inc.
+# Copyright (c) 2018, Joyent, Inc.
 #
 
 #
@@ -19,6 +19,7 @@ JSSTYLE_FLAGS =		-f tools/jsstyle.conf
 SMF_MANIFESTS_IN =	smf/manifests/single-binder.xml.in \
 			smf/manifests/multi-binder.xml.in \
 			smf/manifests/binder-balancer.xml.in \
+			smf/manifests/mksockdir.xml.in \
 			deps/zookeeper-common/smf/manifests/zookeeper.xml.in
 
 #
