@@ -7,10 +7,10 @@
 
 printf 'BACKENDS:\n\n'
 
-printf '%12s %8s %4s %s\n' 'OBJECT' 'BACKEND' 'OK?' 'SOCKET PATH'
+printf '%12s %8s %4s %8s %s\n' 'OBJECT' 'BACKEND' 'OK?' '#REMOTES' 'SOCKET PATH'
 mdb -o nostop -p $(pgrep -x balancer) -e "g_backends::walk avl | \
-    ::printf \"%12p %8d %4d %s\\n\" backend_t . be_id be_ok be_path" \
-    2>/dev/null
+    ::printf \"%12p %8d %4d %8d %s\\n\" backend_t . be_id be_ok be_remotes \
+    be_path" 2>/dev/null
 
 printf '\nREMOTE PEERS:\n\n'
 
