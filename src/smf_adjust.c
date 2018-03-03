@@ -438,11 +438,13 @@ again:
 		goto wait;
 	}
 
-	if (strcmp(st, SCF_STATE_STRING_DISABLED) == 0) {
+	if (strcmp(st, SCF_STATE_STRING_DISABLED) == 0 ||
+	    strcmp(st, SCF_STATE_STRING_UNINIT) == 0) {
 		/*
-		 * The service is disabled.  Refresh the instance to ensure
-		 * visibility of the latest property group changes, and then
-		 * enable the instance.
+		 * The service is disabled or has not yet been seen by
+		 * svc.startd.  Refresh the instance to ensure visibility of
+		 * the latest property group changes, and then enable the
+		 * instance.
 		 */
 		if (smf_refresh_instance(fmri) != 0) {
 			fatal_scf("smf_restore_instance");
@@ -455,8 +457,8 @@ again:
 	}
 
 	/*
-	 * The service is otherwise in an intermediate state, such as "offline"
-	 * or "uninitialized".
+	 * The service is otherwise in an intermediate state and we do not
+	 * have a remedial action to take.
 	 */
 	if (!wait_for_online) {
 		printf("WARNING: not waiting, but \"%s\" in state \"%s\"\n",

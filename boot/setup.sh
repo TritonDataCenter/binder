@@ -54,12 +54,19 @@ if [[ ${FLAVOR} == "manta" ]]; then
 
     zk_common_import ${SVC_ROOT}
 
+    echo "Installing binder socket directory SMF service"
+    if ! svccfg import ${SVC_ROOT}/smf/manifests/mksockdir.xml; then
+        fatal "unable to import binder socket directory service"
+    fi
+
     echo "Installing binder balancer SMF service"
-    svccfg import ${SVC_ROOT}/smf/manifests/binder-balancer.xml
+    if ! svccfg import ${SVC_ROOT}/smf/manifests/binder-balancer.xml; then
+        fatal "unable to import binder balancer service"
+    fi
 
     echo "Installing binder SMF service"
     if ! svccfg import ${SVC_ROOT}/smf/manifests/multi-binder.xml; then
-        fatal "unable to import binder"
+        fatal "unable to import binder service"
     fi
 
     echo "Configuring instances of binder SMF service"
