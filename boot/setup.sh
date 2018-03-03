@@ -1,5 +1,4 @@
 #!/bin/bash
-# -*- mode: shell-script; fill-column: 80; -*-
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,8 +6,15 @@
 #
 
 #
-# Copyright (c) 2014, Joyent, Inc.
+# Copyright (c) 2018, Joyent, Inc.
 #
+
+#
+# The "BINDER_PROCS_PER_ZONE" SAPI property allows the operator to increase the
+# number of instances of the binder SMF service created for this zone.  Cap
+# this value at a reasonable maximum of 32 processes.
+#
+MANTA_BINDER_MAX_PROCS=32
 
 export PS4='[\D{%FT%TZ}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 set -o xtrace
@@ -46,7 +52,30 @@ if [[ ${FLAVOR} == "manta" ]]; then
     echo "Adding local manifest directories"
     manta_add_manifest_dir "/opt/smartdc/binder"
 
-    manta_common_setup "binder"
+    echo "Adding log rotation rules"
+    for (( i = 1; i <= MANTA_BINDER_MAX_PROCS; i++ )); do
+        ii=$(( 5300 + i ))
+        #
+        # If there are multiple binder processes configured, there will be
+        # multiple log files.  We need to upload each one with a distinct name,
+        # so we add the instance number before the zone UUID.
+        #
+        if ! logadm -w "binder-$ii" -C 48 -c -p 1h \
+          -t "/var/log/manta/upload/binder_$ii.\$nodename_%FT%H:00:00.log" \
+          "/var/svc/log/*binder-$ii.log"; then
+            fatal "could not add log rotation rule for instance $inum"
+        fi
+    done
+    if ! manta_add_logadm_entry 'binder-balancer'; then
+        fatal" could not add log rotation rule for balancer"
+    fi
+
+    #
+    # In order to arrange for specific log rotation behaviour, we opt out of
+    # the current logadm configuration step provided by "manta_common_setup".
+    #
+    skip_logrotate=1
+    manta_common_setup "binder" "$skip_logrotate"
 
     echo "Setting up ZooKeeper"
     # manta_setup_zookeeper
@@ -76,7 +105,7 @@ if [[ ${FLAVOR} == "manta" ]]; then
     if ! res=$(json -f $METADATA BINDER_PROCS_PER_ZONE); then
         fatal "unable to load metadata JSON"
     fi
-    if [[ -n $res && $res -gt 1 && $res -lt 32 ]]; then
+    if [[ -n $res && $res -gt 1 && $res -le $MANTA_BINDER_MAX_PROCS ]]; then
         nprocs=$res
     fi
 
