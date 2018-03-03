@@ -69,9 +69,20 @@ if [[ ${FLAVOR} == "manta" ]]; then
         fatal "unable to import binder service"
     fi
 
+    #
+    # Determine the desired number of binder instances for this zone.
+    #
+    nprocs=1
+    if ! res=$(json -f $METADATA BINDER_PROCS_PER_ZONE); then
+        fatal "unable to load metadata JSON"
+    fi
+    if [[ -n $res && $res -gt 1 && $res -lt 32 ]]; then
+        nprocs=$res
+    fi
+
     echo "Configuring instances of binder SMF service"
     if ! /opt/smartdc/binder/lib/smf_adjust -s 'svc:/manta/application/binder' \
-      -b binder -B 5301 -i 1; then
+      -b binder -B 5301 -i $nprocs; then
         fatal "unable to configure instances of binder SMF service"
     fi
 
