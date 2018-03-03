@@ -57,7 +57,7 @@ RELSTAGEDIR :=		/tmp/$(STAMP)
 #
 BUNYAN :=		$(NODE) ./node_modules/.bin/bunyan
 NODEUNIT :=		$(NODE) ./node_modules/.bin/nodeunit
-CTFCONVERT :=		/bin/true
+CTFCONVERT :=		$(ROOT)/tmp/ctftools/bin/ctfconvert
 
 #
 # Repo-specific targets
@@ -72,11 +72,23 @@ check:: deps/zookeeper-common/.git
 CLEAN_FILES += $(NODEUNIT) ./node_modules/nodeunit npm-shrinkwrap.json
 
 #
+# We need to build some C software, and to make it debuggable we should
+# include CTF information.  Download the CTF tools:
+#
+STAMP_CTF :=		tmp/ctftools/.stamp
+$(STAMP_CTF):
+	rm -rf tmp/ctftools
+	./tools/download_ctftools
+	touch $@
+
+CLEAN_FILES += tmp/ctftools tmp/ctftools.*.tar.gz
+
+#
 # A load balancer sits in front of binder, built from the "mname-balancer.git"
 # repository.
 #
 .PHONY: balancer
-balancer: | deps/mname-balancer/.git
+balancer: | $(STAMP_CTF) deps/mname-balancer/.git
 	@mkdir -p $(ROOT)/tmp/balancer.obj
 	cd deps/mname-balancer && $(MAKE) PROG=$(ROOT)/balancer \
 	    OBJ_DIR=$(ROOT)/tmp/balancer.obj \
@@ -105,7 +117,7 @@ SMF_ADJUST_OBJDIR =	tmp/smf_adjust.obj
 
 CLEAN_FILES +=		tmp/smf_adjust.obj smf_adjust
 
-smf_adjust: $(SMF_ADJUST_OBJS:%=$(SMF_ADJUST_OBJDIR)/%)
+smf_adjust: $(SMF_ADJUST_OBJS:%=$(SMF_ADJUST_OBJDIR)/%) | $(STAMP_CTF)
 	gcc -o $@ $^ $(SMF_ADJUST_CFLAGS) $(SMF_ADJUST_LIBS)
 	$(CTFCONVERT) -l $@ $@
 
