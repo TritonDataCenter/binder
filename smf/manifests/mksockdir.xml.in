@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!DOCTYPE service_bundle SYSTEM "/usr/share/lib/xml/dtd/service_bundle.dtd.1">
+<!--
+    This Source Code Form is subject to the terms of the Mozilla Public
+    License, v. 2.0. If a copy of the MPL was not distributed with this
+    file, You can obtain one at http://mozilla.org/MPL/2.0/.
+-->
+
+<!--
+    Copyright (c) 2018, Joyent, Inc.
+-->
+
+<service_bundle type="manifest" name="binder-mksockdir">
+    <service name="manta/application/binder-mksockdir" type="service"
+      version="1">
+        <create_default_instance enabled="true" />
+        <single_instance />
+
+        <dependency type="service" name="filesystem" grouping="require_all"
+          restart_on="error">
+            <service_fmri value="svc:/system/filesystem/local" />
+        </dependency>
+
+        <exec_method type="method" name="start" timeout_seconds="60"
+          exec="/bin/bash /opt/smartdc/binder/smf/methods/mksockdir" />
+
+        <exec_method type="method" name="stop" timeout_seconds="10"
+          exec=":true" />
+
+        <property_group name="startd" type="framework">
+            <propval name="duration" type="astring" value="transient" />
+        </property_group>
+
+        <template>
+            <common_name>
+                <loctext xml:lang="C">Create binder socket directory</loctext>
+            </common_name>
+        </template>
+    </service>
+</service_bundle>

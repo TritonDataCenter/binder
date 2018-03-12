@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright (c) 2018, Joyent, Inc.
  */
 
 var fs = require('fs');
@@ -49,12 +49,16 @@ var LOG = bunyan.createLogger({
 function parseOptions() {
         var option;
         var opts = {};
-        var parser = new getopt.BasicParser('hva:s:p:f:', process.argv);
+        var parser = new getopt.BasicParser('hva:b:s:p:f:', process.argv);
 
         while ((option = parser.getopt()) !== undefined) {
                 switch (option.option) {
                 case 'a':
                         opts.expiry = parseInt(option.optarg, 10);
+                        break;
+
+                case 'b':
+                        opts.balancerSocket = option.optarg;
                         break;
 
                 case 'f':
@@ -113,6 +117,16 @@ function usage(msg) {
 }
 
 
+function safeUnlink(socketPath) {
+        try {
+                fs.unlinkSync(socketPath);
+        } catch (ex) {
+                if (ex && ex.code && ex.code !== 'ENOENT') {
+                        LOG.warn(ex, 'unlinking socket path "%s"', socketPath);
+                }
+        }
+}
+
 
 function run(opts) {
         vasync.pipeline({
@@ -135,11 +149,40 @@ function run(opts) {
                                         opts.recursion);
                                 _.recursion.on('ready', subcb);
                         },
+                        function initBalancer(_, subcb) {
+                                if (!opts.balancerSocket) {
+                                        setImmediate(subcb);
+                                        return;
+                                }
+
+                                process.on('SIGTERM', function () {
+                                        /*
+                                         * When the SMF service is disabled, we
+                                         * want to unlink our socket from the
+                                         * socket directory so that the load
+                                         * balancer knows we might not be
+                                         * coming back.
+                                         */
+                                        LOG.info('caught SIGTERM; unlinking ' +
+                                            'socket "%s"', opts.balancerSocket);
+                                        safeUnlink(opts.balancerSocket);
+                                        process.exit(0);
+                                });
+
+                                /*
+                                 * Unlink our socket path now, in case a stale
+                                 * socket remains in the file system.
+                                 */
+                                safeUnlink(opts.balancerSocket);
+
+                                setImmediate(subcb);
+                        },
                         function initServer(_, subcb) {
                                 _.server = core.createServer({
                                         name: NAME,
                                         log: LOG,
                                         port: opts.port,
+                                        balancerSocket: opts.balancerSocket,
                                         recursion: _.recursion,
                                         zkCache: _.zkCache,
                                         dnsDomain: opts.dnsDomain,
