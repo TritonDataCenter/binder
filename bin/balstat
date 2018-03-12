@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+
+#
+# Copyright (c) 2018, Joyent, Inc.
+#
+
+#
+# Gather some basic information about the running balancer process.  This
+# script is emphatically not a replacement for a real control plane, but in a
+# pinch should make it easy to see backend health and remote peer associations.
+#
+
+printf 'BACKENDS:\n\n'
+
+printf '%12s %8s %4s %8s %s\n' 'OBJECT' 'BACKEND' 'OK?' '#REMOTES' 'SOCKET PATH'
+mdb -o nostop -p $(pgrep -x balancer) -e "g_backends::walk avl | \
+    ::printf \"%12p %8d %4d %8d %s\\n\" backend_t . be_id be_ok be_remotes \
+    be_path" 2>/dev/null
+
+printf '\nREMOTE PEERS:\n\n'
+
+printf '%12s %8s %12s\n' 'OBJECT' 'BACKEND' 'REMOTE IP'
+mdb -o nostop -p $(pgrep -x balancer) -e "g_remotes::walk avl | \
+    ::printf \"%12p %8d %12I\\n\" remote_t . rem_backend rem_addr.S_un.S_addr" \
+    2>/dev/null
+
+printf '\n'

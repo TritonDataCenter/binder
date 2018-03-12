@@ -9,3 +9,6 @@ cscope.out
 smf/manifests/*.xml
 *.tar.bz2
 core
+obj/
+balancer
+smf_adjust
