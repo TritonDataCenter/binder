@@ -31,6 +31,16 @@ export PATH=$SVC_ROOT/build/node/bin:/opt/local/bin:/usr/sbin/:/usr/bin:$PATH
 # ZK-related common setup.
 source /opt/smartdc/boot/zk_common.sh
 
+# keep user/groups compatible with older binder instances, due to delegated
+# datasets
+if ! grep -q hadoop /etc/group; then
+  echo "hadoop::104:" >> /etc/group
+fi
+if ! grep -q zookeeper:x:103:104 /etc/passwd; then
+  sed -ie 's/zookeeper:x:[0-9]*:[0-9]*/zookeeper:x:103:104/g' /etc/passwd
+fi
+chown -R zookeeper:hadoop /var/log/zookeeper
+
 zk_common_delegated_dataset
 zk_common_log_rotation
 

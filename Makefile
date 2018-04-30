@@ -29,8 +29,8 @@ SMF_MANIFESTS_IN =	smf/manifests/single-binder.xml.in \
 # Variables
 #
 NODE_PREBUILT_TAG =		zone
-NODE_PREBUILT_VERSION :=	v0.12.9
-NODE_PREBUILT_IMAGE =		fd2cc906-8938-11e3-beab-4359c665ac99
+NODE_PREBUILT_VERSION :=	v6.14.0
+NODE_PREBUILT_IMAGE =		18b094b0-eb01-11e5-80c1-175dac7ddf02
 
 ENGBLD_USE_BUILDIMAGE =		true
 ENGBLD_REQUIRE := $(shell git submodule update --init deps/eng)
