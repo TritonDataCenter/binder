@@ -26,6 +26,9 @@
     {{/dns_domain}}
     {{^dns_domain}}
     "dnsDomain": "{{{DNS_DOMAIN}}}",
-    "datacenterName": "{{{DATACENTER}}}"
+    "datacenterName": "{{{DATACENTER}}}",
+    "instance_uuid": "{{auto.ZONENAME}}",
+    "server_uuid": "{{auto.SERVER_UUID}}",
+    "service_name": "{{SERVICE_NAME}}"
     {{/dns_domain}}
 }

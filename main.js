@@ -14,6 +14,8 @@ var os = require('os');
 var path = require('path');
 var repl = require('repl');
 
+var createMetricsManager = require('triton-metrics').createMetricsManager;
+var restify = require('restify');
 var bunyan = require('bunyan');
 var clone = require('clone');
 var LRU = require('lru-cache');
@@ -178,6 +180,27 @@ function run(opts) {
                                 setImmediate(subcb);
                         },
                         function initServer(_, subcb) {
+                                var metricsManager = createMetricsManager({
+                                        address: '0.0.0.0',
+                                        log: LOG,
+                                        staticLabels: {
+                                                datacenter: opts.datacenterName,
+                                                instance: opts.instance_uuid,
+                                                server: opts.server_uuid,
+                                                service: opts.service_name,
+                                                port: opts.port
+                                        },
+                                        /*
+                                         * A recommended convention for deriving
+                                         * the port number to be used by the
+                                         * corresponding metrics server is to
+                                         * add 1000 to the service port number.
+                                         */
+                                        port: opts.port + 1000,
+                                        restify: restify
+                                });
+                                metricsManager.listen(function () {});
+
                                 _.server = core.createServer({
                                         name: NAME,
                                         log: LOG,
@@ -186,7 +209,8 @@ function run(opts) {
                                         recursion: _.recursion,
                                         zkCache: _.zkCache,
                                         dnsDomain: opts.dnsDomain,
-                                        datacenterName: opts.datacenterName
+                                        datacenterName: opts.datacenterName,
+                                        metrics: metricsManager
                                 });
                                 _.server.start(subcb);
                         }
