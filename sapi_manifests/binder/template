@@ -3,6 +3,7 @@
         Only render recursion block in Triton. }}
     {{#dns_domain}}
     "dnsDomain": "{{{dns_domain}}}",
+    "datacenterName": "{{{datacenter_name}}}",
     "recursion": {
         "regionName": "{{{region_name}}}",
         "datacenterName": "{{{datacenter_name}}}",
@@ -27,10 +28,10 @@
     {{/dns_domain}}
     {{^dns_domain}}
     "dnsDomain": "{{{DNS_DOMAIN}}}",
+    "datacenterName": "{{{DATACENTER}}}",
     {{/dns_domain}}
 
     {{! Metrics labels values. }}
-    "datacenterName": "{{{datacenter_name}}}",
     "instance_uuid": "{{auto.ZONENAME}}",
     "server_uuid": "{{auto.SERVER_UUID}}",
     "service_name": "{{SERVICE_NAME}}"
