@@ -131,13 +131,34 @@ function safeUnlink(socketPath) {
 
 
 function run(opts) {
+        var metricsManager = createMetricsManager({
+                address: '0.0.0.0',
+                log: LOG,
+                staticLabels: {
+                        datacenter: opts.datacenterName,
+                        instance: opts.instance_uuid,
+                        server: opts.server_uuid,
+                        service: opts.service_name,
+                        port: opts.port
+                },
+                /*
+                 * A recommended convention for deriving the port number to be
+                 * used by the corresponding metrics server is to add 1000 to
+                 * the service port number.
+                 */
+                 port: opts.port + 1000,
+                 restify: restify
+        });
+        metricsManager.listen(function () {});
+
         vasync.pipeline({
                 'arg': {},
                 'funcs': [
                         function initZk(_, subcb) {
                                 _.zkCache = new core.ZKCache({
                                         log: LOG,
-                                        domain: opts.dnsDomain
+                                        domain: opts.dnsDomain,
+                                        collector: metricsManager.collector
                                 });
                                 subcb();
                         },
@@ -180,27 +201,6 @@ function run(opts) {
                                 setImmediate(subcb);
                         },
                         function initServer(_, subcb) {
-                                var metricsManager = createMetricsManager({
-                                        address: '0.0.0.0',
-                                        log: LOG,
-                                        staticLabels: {
-                                                datacenter: opts.datacenterName,
-                                                instance: opts.instance_uuid,
-                                                server: opts.server_uuid,
-                                                service: opts.service_name,
-                                                port: opts.port
-                                        },
-                                        /*
-                                         * A recommended convention for deriving
-                                         * the port number to be used by the
-                                         * corresponding metrics server is to
-                                         * add 1000 to the service port number.
-                                         */
-                                        port: opts.port + 1000,
-                                        restify: restify
-                                });
-                                metricsManager.listen(function () {});
-
                                 _.server = core.createServer({
                                         name: NAME,
                                         log: LOG,
@@ -210,7 +210,7 @@ function run(opts) {
                                         zkCache: _.zkCache,
                                         dnsDomain: opts.dnsDomain,
                                         datacenterName: opts.datacenterName,
-                                        metrics: metricsManager
+                                        collector: metricsManager.collector
                                 });
                                 _.server.start(subcb);
                         }
