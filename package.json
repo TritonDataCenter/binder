@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "expiring-lru-cache": "2.1.0",
-    "nodeunit": "0.9.0"
+    "nodeunit": "0.11.2"
   },
   "scripts": {
     "start": "node ./main.js"

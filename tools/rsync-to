@@ -1,0 +1,94 @@
+#!/bin/bash
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+
+#
+# Copyright (c) 2018, Joyent, Inc.
+#
+
+#
+# Rsync local working copy changes to a Triton "binder0" instance on a headnode.
+#
+# Usage:
+#   ./tools/rsync-to HEADNODE-GZ-IP
+#
+# WARNING: This is quick hack for developers to quickly sync changes to
+# interpreted files from a local working copy to a deployed Triton "binder0"
+# zone (e.g. in COAL) for testing. It does *not* produce a perfect replica
+# of a full clean binder image build.
+#
+
+if [[ -n "$TRACE" ]]; then
+    export PS4='[\D{%FT%TZ}] ${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+    set -o xtrace
+fi
+set -o errexit
+set -o pipefail
+
+TOP=$(cd $(dirname $0)/../; pwd)
+ALIAS=binder0
+SERVICE_PREFIX=/opt/smartdc/binder
+SMF_FMRI=binder
+SSH_OPTS="-q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+HEADNODE=root@$1
+INST=
+
+function fatal
+{
+    echo "$0: fatal error: $*"
+    exit 1
+}
+
+# ---- mainline
+
+if [[ -z "$INST" ]]; then
+    INST=$(ssh $SSH_OPTS $HEADNODE vmadm lookup -1 alias=$ALIAS state=running)
+fi
+echo "$ALIAS instance: $INST"
+
+rsyncOpts=
+if [[ $(uname -s) != "SunOS" ]]; then
+    # Skip updating binary modules because the local and deployment OS do
+    # not match.
+    rsyncOpts="--exclude *.node --exclude build"
+else
+    # The local working copy matches the deployed OS (SmartOS), so let's
+    # wipe "node_modules" to sync it fully everytime.
+    ssh $SSH_OPTS $HEADNODE rm -rf /zones/$INST/root${SERVICE_PREFIX}/node_modules
+fi
+
+rsync -av ${TOP}/ \
+    $HEADNODE:/zones/$INST/root${SERVICE_PREFIX} \
+    $rsyncOpts \
+    --exclude .git/ \
+    --exclude /boot/ \
+    --exclude /build/ \
+    --exclude /docs/ \
+    --exclude /deps/ \
+    --exclude /balancer/ \
+    --exclude /smf_adjust/ \
+    --exclude /src/ \
+    --exclude /tools/ \
+    --exclude /env.sh \
+    --exclude /LICENSE \
+    --exclude /Makefile \
+    --exclude /README.md \
+    --exclude /tmp/
+rsync -av ${TOP}/boot/ \
+    $HEADNODE:/zones/$INST/root/opt/smartdc/boot/ \
+    $rsyncOpts
+
+state=$(ssh $SSH_OPTS ${HEADNODE} svcs -z ${INST} -H -o state $SMF_FMRI)
+if [[ "$state" == "maintenance" ]]; then
+    ssh $SSH_OPTS ${HEADNODE} svcadm -z ${INST} clear $SMF_FMRI
+else
+    ssh $SSH_OPTS ${HEADNODE} svcadm -z ${INST} restart $SMF_FMRI
+fi
+
+# Warning: We aren't restarting config-agent, so local changes to
+# sapi_manifests/... will have to wait for config-agent's polling interval.
+#
+#   ssh $SSH_OPTS ${NODE} svcadm -z ${INST} restart config-agent

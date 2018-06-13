@@ -151,6 +151,7 @@ release: all $(SMF_MANIFESTS) balancer smf_adjust
 	    $(ROOT)/deps/zookeeper-common/sapi_manifests \
 	    $(ROOT)/deps/zookeeper-common/smf \
 	    $(ROOT)/smf \
+	    $(ROOT)/test \
 	    $(ROOT)/bin \
 	    $(RELSTAGEDIR)/root/opt/smartdc/binder
 	cp \
