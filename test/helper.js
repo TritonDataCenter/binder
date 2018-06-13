@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright (c) 2018, Joyent, Inc.
  */
 
 // Just a simple wrapper over nodeunit's exports syntax. Also exposes a common
@@ -15,7 +15,6 @@ var bunyan = require('bunyan');
 var Cache = require('expiring-lru-cache');
 var mname = require('mname');
 var vasync = require('vasync');
-var nzk = require('node-zookeeper-client');
 var path = require('path');
 var mod_zkstream = require('zkstream');
 
@@ -37,7 +36,7 @@ function createLogger(name, stream) {
         var log = bunyan.createLogger({
                 level: (process.env.LOG_LEVEL || 'info'),
                 name: name || process.argv[1],
-                stream: stream || process.stdout,
+                stream: stream || process.stderr,
                 src: true,
                 serializers: mname.bunyan.serializers
         });
@@ -46,7 +45,7 @@ function createLogger(name, stream) {
 
 
 function createServer(callback) {
-        var log = createLogger();
+        var log = createLogger('bindertest');
         var arg = {};
 
         var funcs = [
@@ -56,7 +55,8 @@ function createServer(callback) {
                         _.zk = new mod_zkstream.Client({
                                 address: host,
                                 port: port,
-                                timeout: 10000
+                                timeout: 10000,
+                                log: log
                         });
                         _.zk.once('connect', cb);
                 },

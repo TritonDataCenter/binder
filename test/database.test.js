@@ -9,7 +9,6 @@
  */
 
 var vasync = require('vasync');
-var mod_zkstream = require('zkstream');
 
 var core = require('../lib');
 
