@@ -1,7 +1,7 @@
 {
   "name": "binder",
   "description": "SmartDataService DNS Service",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "Joyent (joyent.com)",
   "license": "MPL-2.0",
   "private": true,
