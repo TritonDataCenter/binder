@@ -156,6 +156,9 @@ else # FLAVOR == "sdc"
     sdc_log_rotation_add zookeeper /var/log/zookeeper/zookeeper.log 1g
     sdc_log_rotation_setup_end
 
+    # Add metadata for cmon-agent discovery
+    mdata-put metricPorts 1053
+
     # All done, run boilerplate end-of-setup
     sdc_setup_complete
 
