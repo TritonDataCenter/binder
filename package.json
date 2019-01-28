@@ -22,7 +22,7 @@
     "vasync": "2.1.0",
     "verror": "^1.10.0",
     "xtend": "1.0.3",
-    "zkstream": "0.11.0"
+    "zkstream": "git+https://github.com/joyent/node-zkstream#fix39"
   },
   "engines": {
     "node": ">=0.10"
