@@ -40,6 +40,11 @@ else
     export FLAVOR="sdc"
 fi
 
+# Add CLI tools to PATH, and manual pages to MANPATH
+echo "" >>/root/.profile
+echo "export PATH=\$PATH:/opt/smartdc/binder/build/node/bin:/opt/smartdc/binder/bin" >>/root/.profile
+echo "export MANPATH=/opt/smartdc/binder/man:\$MANPATH" >> /root/.profile
+
 if [[ ${FLAVOR} == "manta" ]]; then
     source ${DIR}/scripts/util.sh
     source ${DIR}/scripts/services.sh

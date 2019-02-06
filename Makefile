@@ -125,6 +125,25 @@ $(SMF_ADJUST_OBJDIR)/%.o: src/%.c
 	@mkdir -p $(@D)
 	gcc -o $@ -c $(SMF_ADJUST_CFLAGS) $<
 
+ZKLOG_OBJS =		zklog.o
+ZKLOG_LIBS =
+ZKLOG_CFLAGS =		-gdwarf-2 -m64 \
+			-Wall -Wextra -Werror -O2 \
+			-std=c99 \
+			-D__EXTENSIONS__ \
+			-D_XOPEN_SOURCE=600 \
+			-D_DEFAULT_SOURCE=1
+ZKLOG_OBJDIR =		tmp/zklog.obj
+CLEAN_FILES +=		tmp/zklog.obj zklog
+
+zklog: $(ZKLOG_OBJS:%=$(ZKLOG_OBJDIR)/%) | $(STAMP_CTF)
+	gcc -o $@ $^ $(ZKLOG_CFLAGS) $(ZKLOG_LIBS)
+	$(CTFCONVERT) -l $@ $@
+
+$(ZKLOG_OBJDIR)/%.o: src/%.c
+	@mkdir -p $(@D)
+	gcc -o $@ -c $(ZKLOG_CFLAGS) $<
+
 .PHONY: test
 test: $(NODE_EXEC) all
 	$(NODEUNIT) test/*.test.js 2>&1 | $(BUNYAN)
@@ -135,7 +154,7 @@ scripts: deps/manta-scripts/.git
 	cp deps/manta-scripts/*.sh $(BUILD)/scripts
 
 .PHONY: release
-release: all $(SMF_MANIFESTS) balancer smf_adjust
+release: all $(SMF_MANIFESTS) balancer smf_adjust zklog
 	@echo "Building $(RELEASE_TARBALL)"
 	@mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/binder
 	@mkdir -p $(RELSTAGEDIR)/root/opt/smartdc/boot
@@ -154,6 +173,9 @@ release: all $(SMF_MANIFESTS) balancer smf_adjust
 	    $(ROOT)/test \
 	    $(ROOT)/bin \
 	    $(RELSTAGEDIR)/root/opt/smartdc/binder
+	cp \
+	    $(ROOT)/zklog \
+	    $(RELSTAGEDIR)/root/opt/smartdc/binder/bin/
 	cp \
 	    $(ROOT)/balancer \
 	    $(ROOT)/smf_adjust \
