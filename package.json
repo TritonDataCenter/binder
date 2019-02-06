@@ -22,7 +22,7 @@
     "vasync": "2.1.0",
     "verror": "^1.10.0",
     "xtend": "1.0.3",
-    "zkstream": "0.11.0"
+    "zkstream": "0.11.3"
   },
   "engines": {
     "node": ">=0.10"
