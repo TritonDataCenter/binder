@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2018, Joyent, Inc.
+ * Copyright 2019 Joyent, Inc.
  */
 
 /*
@@ -327,7 +327,7 @@ refresh_instance(smfx_t *smfx, scf_instance_t *i)
 	}
 
 	if (smf_refresh_instance(fmri) != 0) {
-		fatal_scf("smf_disable_instance");
+		fatal_scf("smf_refresh_instance");
 	}
 
 	free(fmri);
@@ -869,6 +869,7 @@ main(int argc, char *argv[])
 	int c;
 	const char *base = NULL;
 	const char *sfmri = NULL;
+	const char *restart_ifmri = NULL;
 	long instance_count = 1;
 	long base_number = 1;
 	smfx_t *smfx = NULL;
@@ -881,7 +882,7 @@ main(int argc, char *argv[])
 	 */
 	(void) setlinebuf(stdout);
 
-	while ((c = getopt(argc, argv, ":B:b:i:s:w")) != -1) {
+	while ((c = getopt(argc, argv, ":B:b:i:s:r:w")) != -1) {
 		switch (c) {
 		case 'B':
 			if (parse_long(optarg, &base_number, 10) != 0 ||
@@ -905,6 +906,10 @@ main(int argc, char *argv[])
 				err(1, "-%c requires integer from 0 to 32",
 				    optopt);
 			}
+			break;
+
+		case 'r':
+			restart_ifmri = optarg;
 			break;
 
 		case 'w':
@@ -1119,6 +1124,23 @@ main(int argc, char *argv[])
 		free(i);
 	}
 	avl_destroy(&g_insts);
+
+	/*
+	 * We restart the auxiliary service instance, which is passed as the
+	 * argument to the -r option. This should be a full instance FMRI, e.g.:
+	 *
+	 * svc:/manta/application/metric-ports-updater:default
+	 *
+	 * The above FMRI is that of the canonical auxiliary service instance
+	 * for binder. This instance must be restarted to update the metricPorts
+	 * mdata variable when changes are made to the binder instance
+	 * configuration via smf_adjust.
+	 */
+	if (restart_ifmri != NULL) {
+		if (smf_restart_instance(restart_ifmri) != 0) {
+			fatal_scf("smf_restart_instance");
+		}
+	}
 
 	smfx_free(smfx);
 	return (0);
