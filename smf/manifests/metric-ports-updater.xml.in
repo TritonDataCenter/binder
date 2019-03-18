@@ -1,0 +1,55 @@
+<?xml version='1.0'?>
+<!DOCTYPE service_bundle SYSTEM '/usr/share/lib/xml/dtd/service_bundle.dtd.1'>
+<!--
+    This Source Code Form is subject to the terms of the Mozilla Public
+    License, v. 2.0. If a copy of the MPL was not distributed with this
+    file, You can obtain one at http://mozilla.org/MPL/2.0/.
+-->
+
+<!--
+    Copyright 2019 Joyent, Inc.
+-->
+
+<service_bundle type='manifest' name='manta-application-metric-ports-updater'>
+    <service name='manta/application/metric-ports-updater'
+             type='service'
+             version='1'>
+        <create_default_instance enabled='true' />
+        <single_instance />
+
+        <dependency name='binder'
+                    grouping='optional_all'
+                    restart_on='refresh'
+                    type='service'>
+            <service_fmri value='svc:/manta/application/binder' />
+        </dependency>
+
+        <exec_method type='method'
+                     name='start'
+                     exec='/bin/bash /opt/smartdc/binder/smf/methods/metric-ports-updater.sh'
+                     timeout_seconds='30'>
+            <method_context working_directory='/opt/smartdc/binder'>
+                <method_credential user='root' group='root' />
+            </method_context>
+        </exec_method>
+
+        <exec_method name='stop'
+                     type='method'
+                     exec=':true'
+                     timeout_seconds='300' />
+
+        <property_group name='startd'
+                        type='framework'>
+            <propval name='duration'
+                     type='astring'
+                     value='transient' />
+        </property_group>
+
+        <template>
+            <common_name>
+                <loctext xml:lang='C'>Set metricPorts mdata variable</loctext>
+            </common_name>
+        </template>
+
+    </service>
+</service_bundle>

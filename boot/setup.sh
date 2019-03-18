@@ -6,7 +6,7 @@
 #
 
 #
-# Copyright (c) 2018, Joyent, Inc.
+# Copyright 2019 Joyent, Inc.
 #
 
 #
@@ -105,6 +105,11 @@ if [[ ${FLAVOR} == "manta" ]]; then
         fatal "unable to import binder socket directory service"
     fi
 
+    echo "Installing binder metricPorts updater SMF service"
+    if ! svccfg import ${SVC_ROOT}/smf/manifests/metric-ports-updater.xml; then
+        fatal "unable to import binder metricPorts updater service"
+    fi
+
     echo "Installing binder balancer SMF service"
     if ! svccfg import ${SVC_ROOT}/smf/manifests/binder-balancer.xml; then
         fatal "unable to import binder balancer service"
@@ -128,7 +133,8 @@ if [[ ${FLAVOR} == "manta" ]]; then
 
     echo "Configuring instances of binder SMF service"
     if ! /opt/smartdc/binder/lib/smf_adjust -s 'svc:/manta/application/binder' \
-      -b binder -B 5301 -i $nprocs; then
+      -b binder -B 5301 -i $nprocs \
+      -r 'svc:/manta/application/metric-ports-updater:default'; then
         fatal "unable to configure instances of binder SMF service"
     fi
 
