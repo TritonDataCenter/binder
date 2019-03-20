@@ -6,7 +6,7 @@
 #
 
 #
-# Copyright (c) 2018, Joyent, Inc.
+# Copyright (c) 2019, Joyent, Inc.
 #
 
 #
@@ -101,6 +101,12 @@ do
     esac
 done
 
+# Setup a clean output dir.
+OUTPUT_DIR=/var/tmp/bindertest
+echo "# Setup a clean output dir ($OUTPUT_DIR)."
+rm -rf $OUTPUT_DIR
+mkdir -p $OUTPUT_DIR
+
 cd ${TOP}
 
 test_files=$(ls -1 test/*.test.js)
@@ -114,4 +120,4 @@ fi
 echo "# Test log at $LOG"
 ./build/node/bin/node ./node_modules/.bin/nodeunit \
     --reporter=$opt_reporter \
-    ${test_files} 2>$LOG
+    ${test_files}  2>$LOG | tee $OUTPUT_DIR/binder.tap
