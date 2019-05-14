@@ -9,6 +9,7 @@
 #
 
 NAME = binder
+AGENT_PREBUILT_AGENT_BRANCH=ndp
 
 #
 # Files
