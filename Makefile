@@ -64,7 +64,7 @@ PKGSRC_PREFIX =		opt/local
 JRE_LICENSE_COOKIE =	.dlj_license_accepted
 
 BASE_IMAGE_UUID =	fd2cc906-8938-11e3-beab-4359c665ac99
-BUILDIMAGE_NAME =	manta-nameservice
+BUILDIMAGE_NAME =	mantav2-nameservice
 BUILDIMAGE_DESC =	Manta nameservice
 BUILDIMAGE_PKGSRC =	sun-jre6-6.0.26 \
 			zookeeper-client-3.4.3 \
