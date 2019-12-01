@@ -10,15 +10,27 @@
 
 # Binder
 
-This repository is part of the Joyent Triton project. See the [contribution
-guidelines](https://github.com/joyent/triton/blob/master/CONTRIBUTING.md)
-and general documentation at the main [Triton
-project](https://github.com/joyent/triton) page.
+This repository is part of the Joyent Triton and Manta projects.
+For contribution guidelines, issues, and general documentation, visit the main
+[Triton](http://github.com/joyent/triton) and
+[Manta](http://github.com/joyent/manta) project pages.
 
 This repo contains Binder, which is a DNS server implemented on top of
 ZooKeeper.  Hosts use [Registrar](http://github.com/joyent/registrar) to
 register themselves into DNS.  **Binder's behavior, use in service discovery,
 and the ZooKeeper record format are described in the Registrar documentation.**
+
+## Active Branches
+
+There are currently two active branches of this repository, for the two
+active major versions of Manta. See the [mantav2 overview
+document](https://github.com/joyent/manta/blob/master/docs/mantav2.md) for
+details on major Manta versions.
+
+- [`master`](../../tree/master/) - For development of mantav2, the latest
+  version of Manta. This is the version used by Triton.
+- [`mantav1`](../../tree/mantav1/) - For development of mantav1, the long
+  term support maintenance version of Manta.
 
 ## Configuration
 
