@@ -3,6 +3,7 @@
 /tmp
 /bits
 /build
+/cache
 docs/*.json
 docs/*.html
 cscope.in.out
