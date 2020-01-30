@@ -5,7 +5,7 @@
 #
 
 #
-# Copyright 2019 Joyent, Inc.
+# Copyright 2020 Joyent, Inc.
 #
 
 NAME = binder
@@ -45,6 +45,7 @@ else
 endif
 include ./deps/eng/tools/mk/Makefile.node_modules.defs
 include ./deps/eng/tools/mk/Makefile.smf.defs
+include ./deps/eng/tools/mk/Makefile.ctf.defs
 
 #
 # Env vars
@@ -76,7 +77,6 @@ AGENTS =		amon config registrar
 #
 BUNYAN :=		$(NODE) ./node_modules/.bin/bunyan
 NODEUNIT :=		$(NODE) ./node_modules/.bin/nodeunit
-CTFCONVERT :=		$(ROOT)/tmp/ctftools/bin/ctfconvert
 
 #
 # Repo-specific targets
@@ -94,24 +94,13 @@ CLEAN_FILES += \
 
 $(SMF_MANIFESTS_IN): deps/zookeeper-common/.git
 
-#
-# We need to build some C software, and to make it debuggable we should
-# include CTF information.  Download the CTF tools:
-#
-STAMP_CTF :=		tmp/ctftools/.stamp
-$(STAMP_CTF):
-	rm -rf tmp/ctftools
-	./tools/download_ctftools
-	touch $@
-
-CLEAN_FILES += tmp/ctftools tmp/ctftools.*.tar.gz
 
 #
 # A load balancer sits in front of binder, built from the "mname-balancer.git"
 # repository.
 #
 .PHONY: balancer
-balancer: | $(STAMP_CTF) deps/mname-balancer/.git
+balancer: | $(STAMP_CTF_TOOLS) deps/mname-balancer/.git
 	@mkdir -p $(ROOT)/tmp/balancer.obj
 	cd deps/mname-balancer && $(MAKE) PROG=$(ROOT)/balancer \
 	    OBJ_DIR=$(ROOT)/tmp/balancer.obj \
@@ -140,9 +129,9 @@ SMF_ADJUST_OBJDIR =	tmp/smf_adjust.obj
 
 CLEAN_FILES +=		tmp/smf_adjust.obj smf_adjust
 
-smf_adjust: $(SMF_ADJUST_OBJS:%=$(SMF_ADJUST_OBJDIR)/%) | $(STAMP_CTF)
+smf_adjust: $(SMF_ADJUST_OBJS:%=$(SMF_ADJUST_OBJDIR)/%) | $(STAMP_CTF_TOOLS)
 	gcc -o $@ $^ $(SMF_ADJUST_CFLAGS) $(SMF_ADJUST_LIBS)
-	$(CTFCONVERT) -l $@ $@
+	$(CTFCONVERT) $@
 
 $(SMF_ADJUST_OBJDIR)/%.o: src/%.c
 	@mkdir -p $(@D)
@@ -159,9 +148,9 @@ ZKLOG_CFLAGS =		-gdwarf-2 -m64 \
 ZKLOG_OBJDIR =		tmp/zklog.obj
 CLEAN_FILES +=		tmp/zklog.obj zklog
 
-zklog: $(ZKLOG_OBJS:%=$(ZKLOG_OBJDIR)/%) | $(STAMP_CTF)
+zklog: $(ZKLOG_OBJS:%=$(ZKLOG_OBJDIR)/%) | $(STAMP_CTF_TOOLS)
 	gcc -o $@ $^ $(ZKLOG_CFLAGS) $(ZKLOG_LIBS)
-	$(CTFCONVERT) -l $@ $@
+	$(CTFCONVERT) $@
 
 $(ZKLOG_OBJDIR)/%.o: src/%.c
 	@mkdir -p $(@D)
@@ -237,6 +226,7 @@ ifeq ($(shell uname -s),SunOS)
 else
         include ./deps/eng/tools/mk/Makefile.node.targ
 endif
+include ./deps/eng/tools/mk/Makefile.ctf.targ
 include ./deps/eng/tools/mk/Makefile.smf.targ
 include ./deps/eng/tools/mk/Makefile.node_modules.targ
 include ./deps/eng/tools/mk/Makefile.targ
