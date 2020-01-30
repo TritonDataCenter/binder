@@ -129,9 +129,14 @@ SMF_ADJUST_OBJDIR =	tmp/smf_adjust.obj
 
 CLEAN_FILES +=		tmp/smf_adjust.obj smf_adjust
 
+#
+# Work around "file values.c is missing debug info" on older systems.
+#
+CTFFLAGS = -m
+
 smf_adjust: $(SMF_ADJUST_OBJS:%=$(SMF_ADJUST_OBJDIR)/%) | $(STAMP_CTF_TOOLS)
 	gcc -o $@ $^ $(SMF_ADJUST_CFLAGS) $(SMF_ADJUST_LIBS)
-	$(CTFCONVERT) $@
+	$(CTFCONVERT) $(CTFFLAGS) $@
 
 $(SMF_ADJUST_OBJDIR)/%.o: src/%.c
 	@mkdir -p $(@D)
@@ -150,7 +155,7 @@ CLEAN_FILES +=		tmp/zklog.obj zklog
 
 zklog: $(ZKLOG_OBJS:%=$(ZKLOG_OBJDIR)/%) | $(STAMP_CTF_TOOLS)
 	gcc -o $@ $^ $(ZKLOG_CFLAGS) $(ZKLOG_LIBS)
-	$(CTFCONVERT) $@
+	$(CTFCONVERT) $(CTFFLAGS) $@
 
 $(ZKLOG_OBJDIR)/%.o: src/%.c
 	@mkdir -p $(@D)
