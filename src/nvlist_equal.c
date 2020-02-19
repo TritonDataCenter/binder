@@ -249,6 +249,7 @@ nvpair_equal(nvpair_t *a, nvpair_t *b)
 		break;
 
 	case DATA_TYPE_UNKNOWN:
+	case DATA_TYPE_DONTCARE:	
 		abort();
 		break;
 	}
