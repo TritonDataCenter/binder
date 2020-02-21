@@ -73,7 +73,6 @@ AGENTS =		amon config registrar
 # Tools
 #
 BUNYAN :=		$(NODE) ./node_modules/.bin/bunyan
-NODEUNIT :=		$(NODE) ./node_modules/.bin/nodeunit
 CTFCONVERT :=		$(ROOT)/tmp/ctftools/bin/ctfconvert
 
 #
@@ -84,11 +83,6 @@ all: $(SMF_MANIFESTS) $(STAMP_NODE_MODULES) | $(NPM_EXEC) scripts sdc-scripts
 
 # Needed for 'check-manifests' target.
 check:: deps/zookeeper-common/.git
-
-CLEAN_FILES += \
-	$(NODEUNIT) \
-	./node_modules/nodeunit \
-	npm-shrinkwrap.json
 
 $(SMF_MANIFESTS_IN): deps/zookeeper-common/.git
 
@@ -167,7 +161,7 @@ $(ZKLOG_OBJDIR)/%.o: src/%.c
 
 .PHONY: test
 test: $(NODE_EXEC) all
-	$(NODEUNIT) test/*.test.js 2>&1 | $(BUNYAN)
+	./node_modules/.bin/nodeunit test/*.test.js 2>&1 | $(BUNYAN)
 
 .PHONY: scripts
 scripts: deps/manta-scripts/.git
