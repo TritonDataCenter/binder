@@ -59,7 +59,6 @@ tap.test('setup', t => {
                                         cb();
                                 }
                         });
-		        console.log("setup done");
                 },
 
                 function mkdir(_, cb) {
@@ -109,11 +108,10 @@ tap.test('teardown', t => {
        var self = this;
        helper.zkRmr.call(this.zk, '/com', function(err) {
            self.zk.on('close', function(cb) {
-               self.server.stop(cb);       
+               self.server.stop(cb);
            });
            self.zkCache.stop();
            self.zk.close();
            t.end();
        });
 });
-
