@@ -5,16 +5,19 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright (c) 2020, Joyent, Inc.
  */
 
 var vasync = require('vasync');
 
-var core = require('../lib');
+var core = require('../../lib');
+
+var tap = require('tap');
+
 
 if (require.cache[__dirname + '/helper.js'])
         delete require.cache[__dirname + '/helper.js'];
-var helper = require('./helper.js');
+var helper = require('../helper.js');
 
 
 
@@ -40,7 +43,7 @@ var RECORD = {
 
 ///--- Tests
 
-before(function (callback) {
+tap.test('setup', t => {
         var self = this;
 
         var funcs = [
@@ -48,6 +51,7 @@ before(function (callback) {
                         helper.createServer(function (err, res) {
                                 if (err) {
                                         cb(err);
+                                        t.error(err);
                                 } else {
                                         self.server = res.server;
                                         self.zk = res.zk;
@@ -55,6 +59,7 @@ before(function (callback) {
                                         cb();
                                 }
                         });
+		        console.log("setup done");
                 },
 
                 function mkdir(_, cb) {
@@ -76,27 +81,15 @@ before(function (callback) {
         vasync.pipeline({funcs: funcs}, function (err) {
                 if (err) {
                         console.error(err.stack);
+                        t.error(err);
                         process.exit(1);
                 }
-
-                callback();
+                t.end();
         });
 });
 
 
-after(function (callback) {
-        var self = this;
-        helper.zkRmr.call(this.zk, '/com', function (err) {
-                self.zk.on('close', function () {
-                        self.server.stop(callback);
-                });
-                self.zkCache.stop();
-                self.zk.close();
-        });
-});
-
-
-test('resolve record ok', function (t) {
+tap.test('resolve record ok', t => {
         dig(DOMAIN, 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -111,3 +104,16 @@ test('resolve record ok', function (t) {
                 t.end();
         });
 });
+
+tap.test('teardown', t => {
+       var self = this;
+       helper.zkRmr.call(this.zk, '/com', function(err) {
+           self.zk.on('close', function(cb) {
+               self.server.stop(cb);       
+           });
+           self.zkCache.stop();
+           self.zk.close();
+           t.end();
+       });
+});
+

@@ -5,7 +5,7 @@
 #
 
 #
-# Copyright 2019 Joyent, Inc.
+# Copyright 2020 Joyent, Inc.
 #
 
 NAME = binder
@@ -74,6 +74,14 @@ AGENTS =		amon config registrar
 #
 BUNYAN :=		$(NODE) ./node_modules/.bin/bunyan
 CTFCONVERT :=		$(ROOT)/tmp/ctftools/bin/ctfconvert
+
+#
+# Testing
+#
+TAP_EXEC = ./node_modules/.bin/tap
+TEST_JOBS ?= 10
+TEST_TIMEOUT_S ?= 1200
+TEST_GLOB ?= *
 
 #
 # Repo-specific targets
@@ -159,9 +167,21 @@ $(ZKLOG_OBJDIR)/%.o: src/%.c
 	@mkdir -p $(@D)
 	gcc -o $@ -c $(ZKLOG_CFLAGS) $<
 
+.PHONY: deps
+deps $(TAP_EXEC): | $(REPO_DEPS) $(NPM_EXEC)
+	$(NPM_ENV) $(NPM) install
+
+.PHONY: ensure-node-v6-or-greater-for-test-suite
+ensure-node-v6-or-greater-for-test-suite: | $(TAP_EXEC)
+	@NODE_VER=$(shell node --version) && \
+	    ./node_modules/.bin/semver -r '>=6.x' $$NODE_VER >/dev/null || \
+	    (echo "error: node-tap@12 runner requires node v6 or greater: you have $$NODE_VER"; exit 1)
+
 .PHONY: test
-test: $(NODE_EXEC) all
-	./node_modules/.bin/nodeunit test/*.test.js 2>&1 | $(BUNYAN)
+test: ensure-node-v6-or-greater-for-test-suite | $(TAP_EXEC)
+	@testFiles="$(shell ls test/integration/*.test.js | egrep "$(TEST_FILTER)")" && \
+	    test -z "$$testFiles" || \
+	    NODE_NDEBUG= $(TAP_EXEC) --timeout $(TEST_TIMEOUT_S) -j $(TEST_JOBS) -o ./test.tap $$testFiles
 
 .PHONY: scripts
 scripts: deps/manta-scripts/.git

@@ -5,16 +5,18 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright (c) 2020, Joyent, Inc.
  */
 
 var vasync = require('vasync');
 
-var core = require('../lib');
+var core = require('../../lib');
+
+var tap = require('tap');
 
 if (require.cache[__dirname + '/helper.js'])
         delete require.cache[__dirname + '/helper.js'];
-var helper = require('./helper.js');
+var helper = require('../helper.js');
 
 
 
@@ -33,7 +35,7 @@ var RECORD = 'hosta.foo.com';
 
 ///--- Tests
 
-before(function (callback) {
+tap.test('setup', t => {
         var self = this;
 
         var funcs = [
@@ -77,25 +79,11 @@ before(function (callback) {
                         console.error(err.stack);
                         process.exit(1);
                 }
-
-                callback();
+                t.end();
         });
 });
 
-
-after(function (callback) {
-        var self = this;
-        helper.zkRmr.call(this.zk, '/com', function (err) {
-                self.zk.on('close', function () {
-                        self.server.stop(callback);
-                });
-                self.zkCache.stop();
-                self.zk.close();
-        });
-});
-
-
-test('resolve record ok', function (t) {
+tap.test('resolve record ok', t => {
         dig(RECORD, 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -112,7 +100,7 @@ test('resolve record ok', function (t) {
         });
 });
 
-test('resolve reverse record ok', function (t) {
+tap.test('resolve reverse record ok', t => {
         var dom = ADDR.split('.').reverse().join('.') + '.in-addr.arpa';
         dig(dom, 'PTR', function (err, results) {
                 t.ifError(err);
@@ -130,7 +118,7 @@ test('resolve reverse record ok', function (t) {
         });
 });
 
-test('reverse record not found', function (t) {
+tap.test('reverse record not found', t => {
         var dom = '1.2.3.4.in-addr.arpa';
         dig(dom, 'PTR', function (err, results) {
                 t.ifError(err);
@@ -142,7 +130,7 @@ test('reverse record not found', function (t) {
         });
 });
 
-test('reverse record invalid', function (t) {
+tap.test('reverse record invalid', t => {
         var dom = 'foobar.com';
         dig(dom, 'PTR', function (err, results) {
                 t.ifError(err);
@@ -154,7 +142,7 @@ test('reverse record invalid', function (t) {
         });
 });
 
-test('reverse record invalid ip', function (t) {
+tap.test('reverse record invalid ip', t => {
         var dom = '1.2.in-addr.arpa';
         dig(dom, 'PTR', function (err, results) {
                 t.ifError(err);
@@ -165,3 +153,16 @@ test('reverse record invalid ip', function (t) {
                 t.end();
         });
 });
+
+tap.test('teardown', t => {
+        var self = this;
+        helper.zkRmr.call(this.zk, '/com', function (err) {
+            self.zk.on('close', function (cb) {
+                self.server.stop(cb);
+            });
+            self.zkCache.stop();
+            self.zk.close();
+            t.end();
+        });
+});
+

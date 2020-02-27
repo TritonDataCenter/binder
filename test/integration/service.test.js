@@ -5,16 +5,18 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright (c) 2020, Joyent, Inc.
  */
 
 var vasync = require('vasync');
 
-var core = require('../lib');
+var core = require('../../lib');
+
+var tap = require('tap');
 
 if (require.cache[__dirname + '/helper.js'])
         delete require.cache[__dirname + '/helper.js'];
-var helper = require('./helper.js');
+var helper = require('../helper.js');
 
 
 
@@ -50,7 +52,7 @@ var SVC_VALUE = {
 
 ///--- Tests
 
-before(function (callback) {
+tap.test('setup', t =>  {
         var self = this;
 
         function zkPut(path, obj, cb) {
@@ -124,25 +126,14 @@ before(function (callback) {
                         console.error(err.stack);
                         process.exit(1);
                 }
-
-                setTimeout(callback, 500);
+                t.end();
+                //setTimeout(callback, 500);
         });
 });
 
 
-after(function (callback) {
-        var self = this;
-        helper.zkRmr.call(this.zk, '/com', function (err) {
-                self.zk.on('close', function () {
-                        self.server.stop(callback);
-                });
-                self.zkCache.stop();
-                self.zk.close();
-        });
-});
 
-
-test('resolve record ok', function (t) {
+tap.test('resolve record ok', t => {
         dig(SVC, 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -159,7 +150,7 @@ test('resolve record ok', function (t) {
         });
 });
 
-test('resolve SRV records ok', function (t) {
+tap.test('resolve SRV records ok', t => {
         dig('_http._tcp.' + SVC, 'SRV', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -176,7 +167,7 @@ test('resolve SRV records ok', function (t) {
         });
 });
 
-test('SRV wrong service', function (t) {
+tap.test('SRV wrong service', t => {
         dig('_http._udp.' + SVC, 'SRV', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -187,7 +178,7 @@ test('SRV wrong service', function (t) {
         });
 });
 
-test('SRV not exist', function (t) {
+tap.test('SRV not exist', t => {
         dig('_http._tcp.foobar.foo.com', 'SRV', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -198,7 +189,7 @@ test('SRV not exist', function (t) {
         });
 });
 
-test('resolve member record ok', function (t) {
+tap.test('resolve member record ok', t => {
         dig('lba.' + SVC, 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -215,7 +206,7 @@ test('resolve member record ok', function (t) {
         });
 });
 
-test('resolve reverse record ok', function (t) {
+tap.test('resolve reverse record ok', t => {
         var dom = LBS['lbA'].split('.').reverse().join('.') + '.in-addr.arpa';
         dig(dom, 'PTR', function (err, results) {
                 t.ifError(err);
@@ -232,7 +223,7 @@ test('resolve reverse record ok', function (t) {
 });
 
 
-test('resolve record not found', function (t) {
+tap.test('resolve record not found', t => {
         dig('blah.blah', 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -242,3 +233,17 @@ test('resolve record not found', function (t) {
                 t.end();
         });
 });
+
+tap.test('teardown', t => {
+        var self = this;
+        helper.zkRmr.call(this.zk, '/com', function (err) {
+                self.zk.on('close', function (cb) {
+                        self.server.stop(cb);
+                });
+                self.zkCache.stop();
+                self.zk.close();
+                t.end();
+        });
+});
+
+

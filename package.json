@@ -25,6 +25,10 @@
     "xtend": "1.0.3",
     "zkstream": "0.11.8"
   },
+  "devDependencies": {
+    "expiring-lru-cache": "2.1.0",
+    "tap": "14.10.6"
+  },
   "engines": {
     "node": ">=8.x"
   },
