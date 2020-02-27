@@ -41,11 +41,13 @@ ifeq ($(shell uname -s),SunOS)
         include ./deps/eng/tools/mk/Makefile.node_prebuilt.defs
         include ./deps/eng/tools/mk/Makefile.agent_prebuilt.defs
 else
-        include ./deps/eng/tools/mk/Makefile.node.defs
+       NPM=npm
+       NODE=node
+       NPM_EXEC=$(shell which npm)
+       NODE_EXEC=$(shell which node)
 endif
 include ./deps/eng/tools/mk/Makefile.node_modules.defs
 include ./deps/eng/tools/mk/Makefile.smf.defs
-include ./deps/eng/tools/mk/Makefile.ctf.defs
 
 #
 # Env vars
@@ -137,7 +139,7 @@ CTFFLAGS = -m
 
 smf_adjust: $(SMF_ADJUST_OBJS:%=$(SMF_ADJUST_OBJDIR)/%) | $(STAMP_CTF_TOOLS)
 	gcc -o $@ $^ $(SMF_ADJUST_CFLAGS) $(SMF_ADJUST_LIBS)
-	$(CTFCONVERT) $(CTFFLAGS) $@
+	$(CTFCONVERT) $@
 
 $(SMF_ADJUST_OBJDIR)/%.o: src/%.c
 	@mkdir -p $(@D)
@@ -156,7 +158,7 @@ CLEAN_FILES +=		tmp/zklog.obj zklog
 
 zklog: $(ZKLOG_OBJS:%=$(ZKLOG_OBJDIR)/%) | $(STAMP_CTF_TOOLS)
 	gcc -o $@ $^ $(ZKLOG_CFLAGS) $(ZKLOG_LIBS)
-	$(CTFCONVERT) $(CTFFLAGS) $@
+	$(CTFCONVERT) $@
 
 $(ZKLOG_OBJDIR)/%.o: src/%.c
 	@mkdir -p $(@D)
@@ -166,14 +168,7 @@ $(ZKLOG_OBJDIR)/%.o: src/%.c
 deps $(TAP_EXEC): | $(REPO_DEPS) $(NPM_EXEC)
 	$(NPM_ENV) $(NPM) install
 
-.PHONY: ensure-node-v6-or-greater-for-test-suite
-ensure-node-v6-or-greater-for-test-suite: | $(TAP_EXEC)
-	@NODE_VER=$(shell node --version) && \
-	    ./node_modules/.bin/semver -r '>=6.x' $$NODE_VER >/dev/null || \
-	    (echo "error: node-tap@12 runner requires node v6 or greater: you have $$NODE_VER"; exit 1)
-
-.PHONY: test
-test: ensure-node-v6-or-greater-for-test-suite | $(TAP_EXEC)
+test: $(TAP_EXEC)
 	@testFiles="$(shell ls test/integration/*.test.js | egrep "$(TEST_FILTER)")" && \
 	    test -z "$$testFiles" || \
 	    NODE_NDEBUG= $(TAP_EXEC) --timeout $(TEST_TIMEOUT_S) -j $(TEST_JOBS) -o ./test.tap $$testFiles

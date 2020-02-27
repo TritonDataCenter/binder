@@ -9,23 +9,12 @@
  */
 
 var vasync = require('vasync');
-
 var core = require('../../lib');
-
-var tap = require('tap');
-
-
-if (require.cache[__dirname + '/helper.js'])
-        delete require.cache[__dirname + '/helper.js'];
+var test = require('tap').test;
 var helper = require('../helper.js');
-
-
 
 ///--- Globals
 
-var after = helper.after;
-var before = helper.before;
-var test = helper.test;
 var dig = helper.dig;
 
 var DOMAIN = 'db.foo.com';
@@ -43,7 +32,7 @@ var RECORD = {
 
 ///--- Tests
 
-tap.test('setup', t => {
+test('setup', t => {
         var self = this;
 
         var funcs = [
@@ -88,7 +77,7 @@ tap.test('setup', t => {
 });
 
 
-tap.test('resolve record ok', t => {
+test('resolve record ok', t => {
         dig(DOMAIN, 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -104,7 +93,7 @@ tap.test('resolve record ok', t => {
         });
 });
 
-tap.test('teardown', t => {
+test('teardown', t => {
        var self = this;
        helper.zkRmr.call(this.zk, '/com', function(err) {
            self.zk.on('close', function(cb) {

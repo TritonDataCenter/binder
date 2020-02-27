@@ -8,15 +8,12 @@
  * Copyright (c) 2020, Joyent, Inc.
  */
 
-var vasync = require('vasync');
 
 var core = require('../../lib');
-
-var tap = require('tap');
-
-if (require.cache[__dirname + '/helper.js'])
-        delete require.cache[__dirname + '/helper.js'];
 var helper = require('../helper.js');
+var test = require('tap').test;
+var vasync = require('vasync');
+
 
 
 
@@ -24,7 +21,6 @@ var helper = require('../helper.js');
 
 var after = helper.after;
 var before = helper.before;
-var test = helper.test;
 var dig = helper.dig;
 
 var ADDR = '192.168.0.1';
@@ -35,7 +31,7 @@ var RECORD = 'hosta.foo.com';
 
 ///--- Tests
 
-tap.test('setup', t => {
+test('setup', t => {
         var self = this;
 
         var funcs = [
@@ -83,7 +79,7 @@ tap.test('setup', t => {
         });
 });
 
-tap.test('resolve record ok', t => {
+test('resolve record ok', t => {
         dig(RECORD, 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -100,7 +96,7 @@ tap.test('resolve record ok', t => {
         });
 });
 
-tap.test('resolve reverse record ok', t => {
+test('resolve reverse record ok', t => {
         var dom = ADDR.split('.').reverse().join('.') + '.in-addr.arpa';
         dig(dom, 'PTR', function (err, results) {
                 t.ifError(err);
@@ -118,7 +114,7 @@ tap.test('resolve reverse record ok', t => {
         });
 });
 
-tap.test('reverse record not found', t => {
+test('reverse record not found', t => {
         var dom = '1.2.3.4.in-addr.arpa';
         dig(dom, 'PTR', function (err, results) {
                 t.ifError(err);
@@ -130,7 +126,7 @@ tap.test('reverse record not found', t => {
         });
 });
 
-tap.test('reverse record invalid', t => {
+test('reverse record invalid', t => {
         var dom = 'foobar.com';
         dig(dom, 'PTR', function (err, results) {
                 t.ifError(err);
@@ -142,7 +138,7 @@ tap.test('reverse record invalid', t => {
         });
 });
 
-tap.test('reverse record invalid ip', t => {
+test('reverse record invalid ip', t => {
         var dom = '1.2.in-addr.arpa';
         dig(dom, 'PTR', function (err, results) {
                 t.ifError(err);
@@ -154,7 +150,7 @@ tap.test('reverse record invalid ip', t => {
         });
 });
 
-tap.test('teardown', t => {
+test('teardown', t => {
         var self = this;
         helper.zkRmr.call(this.zk, '/com', function (err) {
             self.zk.on('close', function (cb) {
