@@ -93,7 +93,6 @@ function createServer(callback) {
                         callback(null, arg);
                 }
         });
-        console.log("done");
 }
 
 function zkMkdirP(dpath, cb) {
