@@ -146,11 +146,11 @@ test('reverse record invalid ip', function (t) {
 
 test('teardown', function (t) {
         helper.zkRmr.call(zk, '/com', function (err) {
-            zk.on('close', function (cb) {
-                server.stop(cb);
-            });
-            zkCache.stop();
-            zk.close();
-            t.end();
+                zk.on('close', function (cb) {
+                        server.stop(cb);
+                });
+                zkCache.stop();
+                zk.close();
+                t.end();
         });
 });
