@@ -14,14 +14,10 @@ var helper = require('../helper.js');
 var test = require('tap').test;
 var vasync = require('vasync');
 
-
-
-
 ///--- Globals
 
-var after = helper.after;
-var before = helper.before;
 var dig = helper.dig;
+var server, zk, zkCache;
 
 var ADDR = '192.168.0.1';
 var PATH = '/com/foo/hosta';
@@ -31,25 +27,23 @@ var RECORD = 'hosta.foo.com';
 
 ///--- Tests
 
-test('setup', t => {
-        var self = this;
-
+test('setup', function(t) {
         var funcs = [
                 function setup(_, cb) {
                         helper.createServer(function (err, res) {
                                 if (err) {
                                         cb(err);
                                 } else {
-                                        self.server = res.server;
-                                        self.zk = res.zk;
-                                        self.zkCache = res.zkCache;
+                                        server = res.server;
+                                        zk = res.zk;
+                                        zkCache = res.zkCache;
                                         cb();
                                 }
                         });
                 },
 
                 function mkdir(_, cb) {
-                        helper.zkMkdirP.call(self.zk, PATH, cb);
+                        helper.zkMkdirP.call(zk, PATH, cb);
                 },
 
                 function setRecord(_, cb) {
@@ -60,9 +54,9 @@ test('setup', t => {
                                 }
                         };
                         var data = new Buffer(JSON.stringify(record));
-                        self.zk.create(PATH, data, {}, function (err) {
+                        zk.create(PATH, data, {}, function (err) {
                                 if (err && err.code === 'NODE_EXISTS') {
-                                        self.zk.set(PATH, data, -1, cb);
+                                        zk.set(PATH, data, -1, cb);
                                 } else {
                                         cb();
                                 }
@@ -79,7 +73,7 @@ test('setup', t => {
         });
 });
 
-test('resolve record ok', t => {
+test('resolve record ok', function(t) {
         dig(RECORD, 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -96,7 +90,7 @@ test('resolve record ok', t => {
         });
 });
 
-test('resolve reverse record ok', t => {
+test('resolve reverse record ok', function(t) {
         var dom = ADDR.split('.').reverse().join('.') + '.in-addr.arpa';
         dig(dom, 'PTR', function (err, results) {
                 t.ifError(err);
@@ -114,7 +108,7 @@ test('resolve reverse record ok', t => {
         });
 });
 
-test('reverse record not found', t => {
+test('reverse record not found', function(t) {
         var dom = '1.2.3.4.in-addr.arpa';
         dig(dom, 'PTR', function (err, results) {
                 t.ifError(err);
@@ -126,7 +120,7 @@ test('reverse record not found', t => {
         });
 });
 
-test('reverse record invalid', t => {
+test('reverse record invalid', function(t) {
         var dom = 'foobar.com';
         dig(dom, 'PTR', function (err, results) {
                 t.ifError(err);
@@ -138,7 +132,7 @@ test('reverse record invalid', t => {
         });
 });
 
-test('reverse record invalid ip', t => {
+test('reverse record invalid ip', function(t) {
         var dom = '1.2.in-addr.arpa';
         dig(dom, 'PTR', function (err, results) {
                 t.ifError(err);
@@ -150,14 +144,13 @@ test('reverse record invalid ip', t => {
         });
 });
 
-test('teardown', t => {
-        var self = this;
-        helper.zkRmr.call(this.zk, '/com', function (err) {
-            self.zk.on('close', function (cb) {
-                self.server.stop(cb);
+test('teardown', function(t) {
+        helper.zkRmr.call(zk, '/com', function (err) {
+            zk.on('close', function (cb) {
+                server.stop(cb);
             });
-            self.zkCache.stop();
-            self.zk.close();
+            zkCache.stop();
+            zk.close();
             t.end();
         });
 });

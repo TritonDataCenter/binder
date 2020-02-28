@@ -28,13 +28,13 @@ var RECORD = {
         }
 };
 
-
+var server;
+var zk;
+var zkCache;
 
 ///--- Tests
 
-test('setup', t => {
-        var self = this;
-
+test('setup', function(t) {
         var funcs = [
                 function setup(_, cb) {
                         helper.createServer(function (err, res) {
@@ -42,23 +42,23 @@ test('setup', t => {
                                         cb(err);
                                         t.error(err);
                                 } else {
-                                        self.server = res.server;
-                                        self.zk = res.zk;
-                                        self.zkCache = res.zkCache;
+                                        server = res.server;
+                                        zk = res.zk;
+                                        zkCache = res.zkCache;
                                         cb();
                                 }
                         });
                 },
 
                 function mkdir(_, cb) {
-                        helper.zkMkdirP.call(self.zk, PATH, cb);
+                        helper.zkMkdirP.call(zk, PATH, cb);
                 },
 
                 function setRecord(_, cb) {
                         var data = new Buffer(JSON.stringify(RECORD));
-                        self.zk.create(PATH, data, {}, function (err) {
+                        zk.create(PATH, data, {}, function (err) {
                                 if (err && err.code === 'NODE_EXISTS') {
-                                        self.zk.set(PATH, data, -1, cb);
+                                        zk.set(PATH, data, -1, cb);
                                 } else {
                                         cb();
                                 }
@@ -77,7 +77,7 @@ test('setup', t => {
 });
 
 
-test('resolve record ok', t => {
+test('resolve record ok', function(t) {
         dig(DOMAIN, 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -93,14 +93,13 @@ test('resolve record ok', t => {
         });
 });
 
-test('teardown', t => {
-       var self = this;
-       helper.zkRmr.call(this.zk, '/com', function(err) {
-           self.zk.on('close', function(cb) {
-               self.server.stop(cb);
+test('teardown', function(t) {
+       helper.zkRmr.call(zk, '/com', function(err) {
+           zk.on('close', function(cb) {
+               server.stop(cb);
            });
-           self.zkCache.stop();
-           self.zk.close();
+           zkCache.stop();
+           zk.close();
            t.end();
        });
 });

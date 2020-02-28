@@ -37,19 +37,17 @@ var SVC_VALUE = {
         },
         ttl: 60
 };
-
+var server, zk, zkCache;
 
 
 ///--- Tests
 
-test('setup', t =>  {
-        var self = this;
-
+test('setup', function(t)  {
         function zkPut(path, obj, cb) {
                 var data = new Buffer(JSON.stringify(obj));
-                self.zk.create(path, data, {}, function (err) {
+                zk.create(path, data, {}, function (err) {
                         if (err && err.code === 'NODE_EXISTS') {
-                                self.zk.set(path, data, -1, cb);
+                                zk.set(path, data, -1, cb);
                         } else {
                                 cb(err);
                         }
@@ -62,16 +60,16 @@ test('setup', t =>  {
                                 if (err) {
                                         cb(err);
                                 } else {
-                                        self.server = res.server;
-                                        self.zk = res.zk;
-                                        self.zkCache = res.zkCache;
+                                        server = res.server;
+                                        zk = res.zk;
+                                        zkCache = res.zkCache;
                                         cb();
                                 }
                         });
                 },
 
                 function mkdir(_, cb) {
-                        helper.zkMkdirP.call(self.zk, PATH, cb);
+                        helper.zkMkdirP.call(zk, PATH, cb);
                 },
 
                 function setServiceRecord(_, cb) {
@@ -123,7 +121,7 @@ test('setup', t =>  {
 
 
 
-test('resolve record ok', t => {
+test('resolve record ok', function(t) {
         dig(SVC, 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -140,7 +138,7 @@ test('resolve record ok', t => {
         });
 });
 
-test('resolve SRV records ok', t => {
+test('resolve SRV records ok', function(t) {
         dig('_http._tcp.' + SVC, 'SRV', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -157,7 +155,7 @@ test('resolve SRV records ok', t => {
         });
 });
 
-test('SRV wrong service', t => {
+test('SRV wrong service', function(t) {
         dig('_http._udp.' + SVC, 'SRV', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -168,7 +166,7 @@ test('SRV wrong service', t => {
         });
 });
 
-test('SRV not exist', t => {
+test('SRV not exist', function(t) {
         dig('_http._tcp.foobar.foo.com', 'SRV', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -179,7 +177,7 @@ test('SRV not exist', t => {
         });
 });
 
-test('resolve member record ok', t => {
+test('resolve member record ok', function(t) {
         dig('lba.' + SVC, 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -196,7 +194,7 @@ test('resolve member record ok', t => {
         });
 });
 
-test('resolve reverse record ok', t => {
+test('resolve reverse record ok', function(t) {
         var dom = LBS['lbA'].split('.').reverse().join('.') + '.in-addr.arpa';
         dig(dom, 'PTR', function (err, results) {
                 t.ifError(err);
@@ -213,7 +211,7 @@ test('resolve reverse record ok', t => {
 });
 
 
-test('resolve record not found', t => {
+test('resolve record not found', function(t) {
         dig('blah.blah', 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -224,14 +222,13 @@ test('resolve record not found', t => {
         });
 });
 
-test('teardown', t => {
-        var self = this;
-        helper.zkRmr.call(this.zk, '/com', function (err) {
-                self.zk.on('close', function (cb) {
-                        self.server.stop(cb);
+test('teardown', function(t) {
+        helper.zkRmr.call(zk, '/com', function (err) {
+                zk.on('close', function (cb) {
+                        server.stop(cb);
                 });
-                self.zkCache.stop();
-                self.zk.close();
+                zkCache.stop();
+                zk.close();
                 t.end();
         });
 });
