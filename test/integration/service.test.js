@@ -42,7 +42,7 @@ var server, zk, zkCache;
 
 ///--- Tests
 
-test('setup', function(t)  {
+test('setup', function (t)  {
         function zkPut(path, obj, cb) {
                 var data = new Buffer(JSON.stringify(obj));
                 zk.create(path, data, {}, function (err) {
@@ -121,7 +121,7 @@ test('setup', function(t)  {
 
 
 
-test('resolve record ok', function(t) {
+test('resolve record ok', function (t) {
         dig(SVC, 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -138,7 +138,7 @@ test('resolve record ok', function(t) {
         });
 });
 
-test('resolve SRV records ok', function(t) {
+test('resolve SRV records ok', function (t) {
         dig('_http._tcp.' + SVC, 'SRV', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -155,7 +155,7 @@ test('resolve SRV records ok', function(t) {
         });
 });
 
-test('SRV wrong service', function(t) {
+test('SRV wrong service', function (t) {
         dig('_http._udp.' + SVC, 'SRV', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -166,7 +166,7 @@ test('SRV wrong service', function(t) {
         });
 });
 
-test('SRV not exist', function(t) {
+test('SRV not exist', function (t) {
         dig('_http._tcp.foobar.foo.com', 'SRV', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -177,7 +177,7 @@ test('SRV not exist', function(t) {
         });
 });
 
-test('resolve member record ok', function(t) {
+test('resolve member record ok', function (t) {
         dig('lba.' + SVC, 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -194,7 +194,7 @@ test('resolve member record ok', function(t) {
         });
 });
 
-test('resolve reverse record ok', function(t) {
+test('resolve reverse record ok', function (t) {
         var dom = LBS['lbA'].split('.').reverse().join('.') + '.in-addr.arpa';
         dig(dom, 'PTR', function (err, results) {
                 t.ifError(err);
@@ -211,7 +211,7 @@ test('resolve reverse record ok', function(t) {
 });
 
 
-test('resolve record not found', function(t) {
+test('resolve record not found', function (t) {
         dig('blah.blah', 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -222,7 +222,7 @@ test('resolve record not found', function(t) {
         });
 });
 
-test('teardown', function(t) {
+test('teardown', function (t) {
         helper.zkRmr.call(zk, '/com', function (err) {
                 zk.on('close', function (cb) {
                         server.stop(cb);

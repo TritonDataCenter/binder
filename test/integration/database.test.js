@@ -34,7 +34,7 @@ var zkCache;
 
 ///--- Tests
 
-test('setup', function(t) {
+test('setup', function (t) {
         var funcs = [
                 function setup(_, cb) {
                         helper.createServer(function (err, res) {
@@ -77,7 +77,7 @@ test('setup', function(t) {
 });
 
 
-test('resolve record ok', function(t) {
+test('resolve record ok', function (t) {
         dig(DOMAIN, 'A', function (err, results) {
                 t.ifError(err);
                 t.ok(results);
@@ -93,9 +93,9 @@ test('resolve record ok', function(t) {
         });
 });
 
-test('teardown', function(t) {
-       helper.zkRmr.call(zk, '/com', function(err) {
-           zk.on('close', function(cb) {
+test('teardown', function (t) {
+       helper.zkRmr.call(zk, '/com', function (err) {
+           zk.on('close', function (cb) {
                server.stop(cb);
            });
            zkCache.stop();
