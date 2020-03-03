@@ -48,6 +48,7 @@ else
 endif
 include ./deps/eng/tools/mk/Makefile.node_modules.defs
 include ./deps/eng/tools/mk/Makefile.smf.defs
+include ./deps/eng/tools/mk/Makefile.ctf.defs
 
 #
 # Env vars
