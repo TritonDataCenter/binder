@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (c) 2020, Joyent, Inc.
+ * Copyright 2020 Joyent, Inc.
  */
 
 var vasync = require('vasync');
