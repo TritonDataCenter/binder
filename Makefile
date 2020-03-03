@@ -77,7 +77,6 @@ AGENTS =		amon config registrar
 # Tools
 #
 BUNYAN :=		$(NODE) ./node_modules/.bin/bunyan
-CTFCONVERT :=		$(ROOT)/tmp/ctftools/bin/ctfconvert
 
 #
 # Testing
