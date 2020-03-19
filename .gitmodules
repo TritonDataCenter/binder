@@ -16,7 +16,6 @@
 [submodule "deps/mname-balancer"]
 	path = deps/mname-balancer
 	url = https://github.com/joyent/mname-balancer.git
-        branch = jra-zk-3.4.11
 [submodule "deps/eng"]
 	path = deps/eng
 	url = https://github.com/joyent/eng.git
