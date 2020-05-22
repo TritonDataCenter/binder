@@ -78,6 +78,7 @@ AGENTS =		amon config registrar
 BUNYAN :=		$(NODE) ./node_modules/.bin/bunyan
 NODEUNIT :=		$(NODE) ./node_modules/.bin/nodeunit
 
+ENGBLD_CHECK_COPYRIGHT_ARGS = -b mantav1
 #
 # Repo-specific targets
 #
