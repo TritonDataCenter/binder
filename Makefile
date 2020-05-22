@@ -1,4 +1,3 @@
-#
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -79,6 +78,7 @@ BUNYAN :=		$(NODE) ./node_modules/.bin/bunyan
 NODEUNIT :=		$(NODE) ./node_modules/.bin/nodeunit
 
 ENGBLD_CHECK_COPYRIGHT_ARGS = -b mantav1
+BUILD_PLATFORM = 20151126T062538Z
 #
 # Repo-specific targets
 #
