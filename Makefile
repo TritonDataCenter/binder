@@ -71,6 +71,10 @@ BUILDIMAGE_PKGSRC =	sun-jre6-6.0.26 \
 			zookeeper-server-3.4.3
 AGENTS =		amon config registrar
 
+# For mantav1, use the old PI and specify the branch to compare copyrights with
+ENGBLD_CHECK_COPYRIGHT_ARGS = -b mantav1
+BUILD_PLATFORM = 20151126T062538Z
+
 #
 # Tools
 #
