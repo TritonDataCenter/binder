@@ -1,7 +1,7 @@
 {
   "name": "binder",
   "description": "Triton Data Center internal DNS service",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "author": "Joyent (joyent.com)",
   "license": "MPL-2.0",
   "private": true,
