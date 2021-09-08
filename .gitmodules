@@ -3,7 +3,7 @@
 	url = https://github.com/joyent/jsstyle.git
 [submodule "deps/javascriptlint"]
 	path = deps/javascriptlint
-	url = https://github.com/davepacheco/javascriptlint.git
+	url = https://github.com/joyent/javascriptlint.git
 [submodule "deps/manta-scripts"]
 	path = deps/manta-scripts
 	url = https://github.com/joyent/manta-scripts.git

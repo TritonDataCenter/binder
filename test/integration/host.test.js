@@ -5,25 +5,19 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright 2020 Joyent, Inc.
  */
 
+
+var core = require('../../lib');
+var helper = require('../helper.js');
+var test = require('tap').test;
 var vasync = require('vasync');
-
-var core = require('../lib');
-
-if (require.cache[__dirname + '/helper.js'])
-        delete require.cache[__dirname + '/helper.js'];
-var helper = require('./helper.js');
-
-
 
 ///--- Globals
 
-var after = helper.after;
-var before = helper.before;
-var test = helper.test;
 var dig = helper.dig;
+var server, zk, zkCache;
 
 var ADDR = '192.168.0.1';
 var PATH = '/com/foo/hosta';
@@ -33,25 +27,23 @@ var RECORD = 'hosta.foo.com';
 
 ///--- Tests
 
-before(function (callback) {
-        var self = this;
-
+test('setup', function (t) {
         var funcs = [
                 function setup(_, cb) {
                         helper.createServer(function (err, res) {
                                 if (err) {
                                         cb(err);
                                 } else {
-                                        self.server = res.server;
-                                        self.zk = res.zk;
-                                        self.zkCache = res.zkCache;
+                                        server = res.server;
+                                        zk = res.zk;
+                                        zkCache = res.zkCache;
                                         cb();
                                 }
                         });
                 },
 
                 function mkdir(_, cb) {
-                        helper.zkMkdirP.call(self.zk, PATH, cb);
+                        helper.zkMkdirP.call(zk, PATH, cb);
                 },
 
                 function setRecord(_, cb) {
@@ -62,9 +54,9 @@ before(function (callback) {
                                 }
                         };
                         var data = new Buffer(JSON.stringify(record));
-                        self.zk.create(PATH, data, {}, function (err) {
+                        zk.create(PATH, data, {}, function (err) {
                                 if (err && err.code === 'NODE_EXISTS') {
-                                        self.zk.set(PATH, data, -1, cb);
+                                        zk.set(PATH, data, -1, cb);
                                 } else {
                                         cb();
                                 }
@@ -77,23 +69,9 @@ before(function (callback) {
                         console.error(err.stack);
                         process.exit(1);
                 }
-
-                callback();
+                t.end();
         });
 });
-
-
-after(function (callback) {
-        var self = this;
-        helper.zkRmr.call(this.zk, '/com', function (err) {
-                self.zk.on('close', function () {
-                        self.server.stop(callback);
-                });
-                self.zkCache.stop();
-                self.zk.close();
-        });
-});
-
 
 test('resolve record ok', function (t) {
         dig(RECORD, 'A', function (err, results) {
@@ -162,6 +140,17 @@ test('reverse record invalid ip', function (t) {
                 t.equal(results.status, 'REFUSED');
                 t.ok(results.answers);
                 t.equal(results.answers.length, 0);
+                t.end();
+        });
+});
+
+test('teardown', function (t) {
+        helper.zkRmr.call(zk, '/com', function (err) {
+                zk.on('close', function (cb) {
+                        server.stop(cb);
+                });
+                zkCache.stop();
+                zk.close();
                 t.end();
         });
 });

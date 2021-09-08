@@ -5,32 +5,31 @@
   "author": "Joyent (joyent.com)",
   "license": "MPL-2.0",
   "private": true,
+  "// dependencies TODO": "artedi to v2 https://github.com/joyent/node-artedi/blob/master/docs/migrating.md",
   "dependencies": {
-    "artedi": "1.3.0",
-    "assert-plus": "0.1.5",
-    "bunyan": "1.5.1",
+    "artedi": "1.4.1",
+    "assert-plus": "1.0.0",
+    "bunyan": "1.8.12",
     "clone": "0.1.1",
-    "dtrace-provider": "0.8.7",
+    "dtrace-provider": "0.8.8",
     "lru-cache": "4.1.5",
     "mname": "1.5.0",
     "mooremachine": "^2.1.0",
     "mname-client": "0.6.0",
     "posix-getopt": "1.0.0",
     "restify": "4.3.2",
-    "sdc-clients": "9.0.3",
     "triton-metrics": "0.1.1",
+    "ufds": "1.6.0",
     "vasync": "2.1.0",
     "verror": "^1.10.0",
     "xtend": "1.0.3",
     "zkstream": "0.11.8"
   },
-  "engines": {
-    "node": ">=0.10"
-  },
   "devDependencies": {
-    "expiring-lru-cache": "2.1.0",
-    "ejs": "2.7.2",
-    "nodeunit": "0.11.2"
+    "tap": "14.10.6"
+  },
+  "engines": {
+    "node": ">=8.x"
   },
   "scripts": {
     "start": "node ./main.js"

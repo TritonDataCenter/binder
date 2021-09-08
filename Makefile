@@ -28,9 +28,9 @@ SMF_MANIFESTS_IN =	smf/manifests/single-binder.xml.in \
 #
 # Variables
 #
-NODE_PREBUILT_TAG =		zone
-NODE_PREBUILT_VERSION :=	v0.12.9
-NODE_PREBUILT_IMAGE =		fd2cc906-8938-11e3-beab-4359c665ac99
+NODE_PREBUILT_TAG =		zone64
+NODE_PREBUILT_VERSION :=	v8.17.0
+NODE_PREBUILT_IMAGE =		5417ab20-3156-11ea-8b19-2b66f5e7a439
 
 ENGBLD_USE_BUILDIMAGE =		true
 ENGBLD_REQUIRE := $(shell git submodule update --init deps/eng)
@@ -41,7 +41,10 @@ ifeq ($(shell uname -s),SunOS)
         include ./deps/eng/tools/mk/Makefile.node_prebuilt.defs
         include ./deps/eng/tools/mk/Makefile.agent_prebuilt.defs
 else
-        include ./deps/eng/tools/mk/Makefile.node.defs
+       NPM=npm
+       NODE=node
+       NPM_EXEC=$(shell which npm)
+       NODE_EXEC=$(shell which node)
 endif
 include ./deps/eng/tools/mk/Makefile.node_modules.defs
 include ./deps/eng/tools/mk/Makefile.smf.defs
@@ -64,19 +67,24 @@ RELSTAGEDIR :=		/tmp/$(NAME)-$(STAMP)
 PKGSRC_PREFIX =		opt/local
 JRE_LICENSE_COOKIE =	.dlj_license_accepted
 
-BASE_IMAGE_UUID =	fd2cc906-8938-11e3-beab-4359c665ac99
+BASE_IMAGE_UUID =	5417ab20-3156-11ea-8b19-2b66f5e7a439
 BUILDIMAGE_NAME =	mantav2-nameservice
 BUILDIMAGE_DESC =	Manta nameservice
-BUILDIMAGE_PKGSRC =	sun-jre6-6.0.26 \
-			zookeeper-client-3.4.3 \
-			zookeeper-server-3.4.3
+BUILDIMAGE_PKGSRC =     openjdk8-1.8.232 zookeeper-3.4.12
 AGENTS =		amon config registrar
 
 #
 # Tools
 #
 BUNYAN :=		$(NODE) ./node_modules/.bin/bunyan
-NODEUNIT :=		$(NODE) ./node_modules/.bin/nodeunit
+
+#
+# Testing
+#
+TAP_EXEC = ./node_modules/.bin/tap
+TEST_JOBS ?= 10
+TEST_TIMEOUT_S ?= 1200
+TEST_GLOB ?= *
 
 #
 # Repo-specific targets
@@ -86,11 +94,6 @@ all: $(SMF_MANIFESTS) $(STAMP_NODE_MODULES) | $(NPM_EXEC) scripts sdc-scripts
 
 # Needed for 'check-manifests' target.
 check:: deps/zookeeper-common/.git
-
-CLEAN_FILES += \
-	$(NODEUNIT) \
-	./node_modules/nodeunit \
-	npm-shrinkwrap.json
 
 $(SMF_MANIFESTS_IN): deps/zookeeper-common/.git
 
@@ -136,7 +139,7 @@ CTFFLAGS = -m
 
 smf_adjust: $(SMF_ADJUST_OBJS:%=$(SMF_ADJUST_OBJDIR)/%) | $(STAMP_CTF_TOOLS)
 	gcc -o $@ $^ $(SMF_ADJUST_CFLAGS) $(SMF_ADJUST_LIBS)
-	$(CTFCONVERT) $(CTFFLAGS) $@
+	$(CTFCONVERT) $@
 
 $(SMF_ADJUST_OBJDIR)/%.o: src/%.c
 	@mkdir -p $(@D)
@@ -155,15 +158,20 @@ CLEAN_FILES +=		tmp/zklog.obj zklog
 
 zklog: $(ZKLOG_OBJS:%=$(ZKLOG_OBJDIR)/%) | $(STAMP_CTF_TOOLS)
 	gcc -o $@ $^ $(ZKLOG_CFLAGS) $(ZKLOG_LIBS)
-	$(CTFCONVERT) $(CTFFLAGS) $@
+	$(CTFCONVERT) $@
 
 $(ZKLOG_OBJDIR)/%.o: src/%.c
 	@mkdir -p $(@D)
 	gcc -o $@ -c $(ZKLOG_CFLAGS) $<
 
-.PHONY: test
-test: $(NODE_EXEC) all
-	$(NODEUNIT) test/*.test.js 2>&1 | $(BUNYAN)
+.PHONY: deps
+deps $(TAP_EXEC): | $(REPO_DEPS) $(NPM_EXEC)
+	$(NPM_ENV) $(NPM) install
+
+test: $(TAP_EXEC)
+	@testFiles="$(shell ls test/integration/*.test.js | egrep "$(TEST_FILTER)")" && \
+	    test -z "$$testFiles" || \
+	    NODE_NDEBUG= $(TAP_EXEC) --timeout $(TEST_TIMEOUT_S) -j $(TEST_JOBS) -o ./test.tap $$testFiles
 
 .PHONY: scripts
 scripts: deps/manta-scripts/.git
