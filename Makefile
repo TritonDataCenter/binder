@@ -67,7 +67,8 @@ RELSTAGEDIR :=		/tmp/$(NAME)-$(STAMP)
 PKGSRC_PREFIX =		opt/local
 JRE_LICENSE_COOKIE =	.dlj_license_accepted
 
-BASE_IMAGE_UUID =	fd2cc906-8938-11e3-beab-4359c665ac99
+# triton-origin-x86_64-19.4.0
+BASE_IMAGE_UUID = 59ba2e5e-976f-4e09-8aac-a4a7ef0395f5
 BUILDIMAGE_NAME =	mantav2-nameservice
 BUILDIMAGE_DESC =	Manta nameservice
 BUILDIMAGE_PKGSRC =	openjdk8-1.8.192 \
