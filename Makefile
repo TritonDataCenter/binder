@@ -5,7 +5,7 @@
 #
 
 #
-# Copyright 2020 Joyent, Inc.
+# Copyright 2022 Joyent, Inc.
 #
 
 NAME = binder
@@ -29,7 +29,7 @@ SMF_MANIFESTS_IN =	smf/manifests/single-binder.xml.in \
 # Variables
 #
 NODE_PREBUILT_TAG =		zone
-NODE_PREBUILT_VERSION :=	v6.14.0
+NODE_PREBUILT_VERSION :=	v6.17.1
 NODE_PREBUILT_IMAGE =		18b094b0-eb01-11e5-80c1-175dac7ddf02
 
 ENGBLD_USE_BUILDIMAGE =		true
@@ -41,7 +41,10 @@ ifeq ($(shell uname -s),SunOS)
         include ./deps/eng/tools/mk/Makefile.node_prebuilt.defs
         include ./deps/eng/tools/mk/Makefile.agent_prebuilt.defs
 else
-        include ./deps/eng/tools/mk/Makefile.node.defs
+        NPM=npm
+        NODE=node
+        NPM_EXEC=$(shell which npm)
+        NODE_EXEC=$(shell which node)
 endif
 include ./deps/eng/tools/mk/Makefile.node_modules.defs
 include ./deps/eng/tools/mk/Makefile.smf.defs
