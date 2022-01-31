@@ -28,16 +28,16 @@ SMF_MANIFESTS_IN =	smf/manifests/single-binder.xml.in \
 #
 # Variables
 #
-NODE_PREBUILT_TAG =		zone
-NODE_PREBUILT_VERSION :=	v6.17.1
-NODE_PREBUILT_IMAGE =		18b094b0-eb01-11e5-80c1-175dac7ddf02
-
 ENGBLD_USE_BUILDIMAGE =		true
 ENGBLD_REQUIRE := $(shell git submodule update --init deps/eng)
 include ./deps/eng/tools/mk/Makefile.defs
 TOP ?= $(error Unable to access eng.git submodule Makefiles.)
 
 ifeq ($(shell uname -s),SunOS)
+        # minimal-64-lts@19.4.0
+        NODE_PREBUILT_IMAGE=5417ab20-3156-11ea-8b19-2b66f5e7a439
+        NODE_PREBUILT_VERSION=v6.17.1
+        NODE_PREBUILT_TAG=zone64
         include ./deps/eng/tools/mk/Makefile.node_prebuilt.defs
         include ./deps/eng/tools/mk/Makefile.agent_prebuilt.defs
 else
