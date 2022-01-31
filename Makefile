@@ -71,7 +71,7 @@ JRE_LICENSE_COOKIE =	.dlj_license_accepted
 BASE_IMAGE_UUID = 59ba2e5e-976f-4e09-8aac-a4a7ef0395f5
 BUILDIMAGE_NAME =	mantav2-nameservice
 BUILDIMAGE_DESC =	Manta nameservice
-BUILDIMAGE_PKGSRC =	openjdk8-1.8.192 \
+BUILDIMAGE_PKGSRC =	openjdk8-1.8.232 \
 			zookeeper-3.4.12
 AGENTS =		amon config registrar
 
