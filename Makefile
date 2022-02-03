@@ -68,18 +68,24 @@ PKGSRC_PREFIX =		opt/local
 JRE_LICENSE_COOKIE =	.dlj_license_accepted
 
 # triton-origin-x86_64-19.4.0
-BASE_IMAGE_UUID = 59ba2e5e-976f-4e09-8aac-a4a7ef0395f5
+BASE_IMAGE_UUID =	59ba2e5e-976f-4e09-8aac-a4a7ef0395f5
 BUILDIMAGE_NAME =	mantav2-nameservice
 BUILDIMAGE_DESC =	Manta nameservice
-BUILDIMAGE_PKGSRC =	openjdk8-1.8.232 \
-			zookeeper-3.4.12
+BUILDIMAGE_PKGSRC =	openjdk8-1.8.232 zookeeper-3.4.12
 AGENTS =		amon config registrar
 
 #
 # Tools
 #
 BUNYAN :=		$(NODE) ./node_modules/.bin/bunyan
-NODEUNIT :=		$(NODE) ./node_modules/.bin/nodeunit
+
+#
+# Testing
+#
+TAP_EXEC = ./node_modules/.bin/tap
+TEST_JOBS ?= 10
+TEST_TIMEOUT_S ?= 1200
+TEST_GLOB ?= *
 
 #
 # Repo-specific targets
@@ -89,11 +95,6 @@ all: $(SMF_MANIFESTS) $(STAMP_NODE_MODULES) | $(NPM_EXEC) scripts sdc-scripts
 
 # Needed for 'check-manifests' target.
 check:: deps/zookeeper-common/.git
-
-CLEAN_FILES += \
-	$(NODEUNIT) \
-	./node_modules/nodeunit \
-	npm-shrinkwrap.json
 
 $(SMF_MANIFESTS_IN): deps/zookeeper-common/.git
 
@@ -139,7 +140,7 @@ CTFFLAGS = -m
 
 smf_adjust: $(SMF_ADJUST_OBJS:%=$(SMF_ADJUST_OBJDIR)/%) | $(STAMP_CTF_TOOLS)
 	gcc -o $@ $^ $(SMF_ADJUST_CFLAGS) $(SMF_ADJUST_LIBS)
-	$(CTFCONVERT) $(CTFFLAGS) $@
+	$(CTFCONVERT) $@
 
 $(SMF_ADJUST_OBJDIR)/%.o: src/%.c
 	@mkdir -p $(@D)
@@ -158,15 +159,20 @@ CLEAN_FILES +=		tmp/zklog.obj zklog
 
 zklog: $(ZKLOG_OBJS:%=$(ZKLOG_OBJDIR)/%) | $(STAMP_CTF_TOOLS)
 	gcc -o $@ $^ $(ZKLOG_CFLAGS) $(ZKLOG_LIBS)
-	$(CTFCONVERT) $(CTFFLAGS) $@
+	$(CTFCONVERT) $@
 
 $(ZKLOG_OBJDIR)/%.o: src/%.c
 	@mkdir -p $(@D)
 	gcc -o $@ -c $(ZKLOG_CFLAGS) $<
 
-.PHONY: test
-test: $(NODE_EXEC) all
-	$(NODEUNIT) test/*.test.js 2>&1 | $(BUNYAN)
+.PHONY: deps
+deps $(TAP_EXEC): | $(REPO_DEPS) $(NPM_EXEC)
+	$(NPM_ENV) $(NPM) install
+
+test: $(TAP_EXEC)
+	@testFiles="$(shell ls test/integration/*.test.js | egrep "$(TEST_FILTER)")" && \
+	    test -z "$$testFiles" || \
+	    NODE_NDEBUG= $(TAP_EXEC) --timeout $(TEST_TIMEOUT_S) -j $(TEST_JOBS) -o ./test.tap $$testFiles
 
 .PHONY: scripts
 scripts: deps/manta-scripts/.git

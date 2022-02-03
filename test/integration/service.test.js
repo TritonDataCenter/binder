@@ -5,24 +5,16 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright 2022 Joyent, Inc.
  */
 
 var vasync = require('vasync');
-
-var core = require('../lib');
-
-if (require.cache[__dirname + '/helper.js'])
-        delete require.cache[__dirname + '/helper.js'];
-var helper = require('./helper.js');
-
-
+var core = require('../../lib');
+var test = require('tap').test;
+var helper = require('../helper.js');
 
 ///--- Globals
 
-var after = helper.after;
-var before = helper.before;
-var test = helper.test;
 var dig = helper.dig;
 
 var HOSTS = {
@@ -45,19 +37,17 @@ var SVC_VALUE = {
         },
         ttl: 60
 };
-
+var server, zk, zkCache;
 
 
 ///--- Tests
 
-before(function (callback) {
-        var self = this;
-
+test('setup', function (t)  {
         function zkPut(path, obj, cb) {
                 var data = new Buffer(JSON.stringify(obj));
-                self.zk.create(path, data, {}, function (err) {
+                zk.create(path, data, {}, function (err) {
                         if (err && err.code === 'NODE_EXISTS') {
-                                self.zk.set(path, data, -1, cb);
+                                zk.set(path, data, -1, cb);
                         } else {
                                 cb(err);
                         }
@@ -70,16 +60,16 @@ before(function (callback) {
                                 if (err) {
                                         cb(err);
                                 } else {
-                                        self.server = res.server;
-                                        self.zk = res.zk;
-                                        self.zkCache = res.zkCache;
+                                        server = res.server;
+                                        zk = res.zk;
+                                        zkCache = res.zkCache;
                                         cb();
                                 }
                         });
                 },
 
                 function mkdir(_, cb) {
-                        helper.zkMkdirP.call(self.zk, PATH, cb);
+                        helper.zkMkdirP.call(zk, PATH, cb);
                 },
 
                 function setServiceRecord(_, cb) {
@@ -124,22 +114,11 @@ before(function (callback) {
                         console.error(err.stack);
                         process.exit(1);
                 }
-
-                setTimeout(callback, 500);
+                t.end();
+                //setTimeout(callback, 500);
         });
 });
 
-
-after(function (callback) {
-        var self = this;
-        helper.zkRmr.call(this.zk, '/com', function (err) {
-                self.zk.on('close', function () {
-                        self.server.stop(callback);
-                });
-                self.zkCache.stop();
-                self.zk.close();
-        });
-});
 
 
 test('resolve record ok', function (t) {
@@ -239,6 +218,17 @@ test('resolve record not found', function (t) {
                 t.equal(results.status, 'REFUSED');
                 t.ok(results.answers);
                 t.equal(results.answers.length, 0);
+                t.end();
+        });
+});
+
+test('teardown', function (t) {
+        helper.zkRmr.call(zk, '/com', function (err) {
+                zk.on('close', function (cb) {
+                        server.stop(cb);
+                });
+                zkCache.stop();
+                zk.close();
                 t.end();
         });
 });
