@@ -5,7 +5,7 @@
 #
 
 #
-# Copyright 2020 Joyent, Inc.
+# Copyright 2022 Joyent, Inc.
 #
 
 NAME = binder
@@ -28,20 +28,23 @@ SMF_MANIFESTS_IN =	smf/manifests/single-binder.xml.in \
 #
 # Variables
 #
-NODE_PREBUILT_TAG =		zone
-NODE_PREBUILT_VERSION :=	v0.12.9
-NODE_PREBUILT_IMAGE =		fd2cc906-8938-11e3-beab-4359c665ac99
-
 ENGBLD_USE_BUILDIMAGE =		true
 ENGBLD_REQUIRE := $(shell git submodule update --init deps/eng)
 include ./deps/eng/tools/mk/Makefile.defs
 TOP ?= $(error Unable to access eng.git submodule Makefiles.)
 
 ifeq ($(shell uname -s),SunOS)
+        # minimal-64-lts@19.4.0
+        NODE_PREBUILT_IMAGE=5417ab20-3156-11ea-8b19-2b66f5e7a439
+        NODE_PREBUILT_VERSION=v6.17.1
+        NODE_PREBUILT_TAG=zone64
         include ./deps/eng/tools/mk/Makefile.node_prebuilt.defs
         include ./deps/eng/tools/mk/Makefile.agent_prebuilt.defs
 else
-        include ./deps/eng/tools/mk/Makefile.node.defs
+        NPM=npm
+        NODE=node
+        NPM_EXEC=$(shell which npm)
+        NODE_EXEC=$(shell which node)
 endif
 include ./deps/eng/tools/mk/Makefile.node_modules.defs
 include ./deps/eng/tools/mk/Makefile.smf.defs
@@ -64,12 +67,12 @@ RELSTAGEDIR :=		/tmp/$(NAME)-$(STAMP)
 PKGSRC_PREFIX =		opt/local
 JRE_LICENSE_COOKIE =	.dlj_license_accepted
 
-BASE_IMAGE_UUID =	fd2cc906-8938-11e3-beab-4359c665ac99
+# triton-origin-x86_64-19.4.0
+BASE_IMAGE_UUID = 59ba2e5e-976f-4e09-8aac-a4a7ef0395f5
 BUILDIMAGE_NAME =	mantav2-nameservice
 BUILDIMAGE_DESC =	Manta nameservice
-BUILDIMAGE_PKGSRC =	sun-jre6-6.0.26 \
-			zookeeper-client-3.4.3 \
-			zookeeper-server-3.4.3
+BUILDIMAGE_PKGSRC =	openjdk8-1.8.232 \
+			zookeeper-3.4.12
 AGENTS =		amon config registrar
 
 #
