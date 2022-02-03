@@ -5,16 +5,24 @@
  */
 
 /*
- * Copyright 2022 Joyent, Inc.
+ * Copyright (c) 2014, Joyent, Inc.
  */
 
 var vasync = require('vasync');
-var core = require('../../lib');
-var test = require('tap').test;
-var helper = require('../helper.js');
+
+var core = require('../lib');
+
+if (require.cache[__dirname + '/helper.js'])
+        delete require.cache[__dirname + '/helper.js'];
+var helper = require('./helper.js');
+
+
 
 ///--- Globals
 
+var after = helper.after;
+var before = helper.before;
+var test = helper.test;
 var dig = helper.dig;
 
 var DOMAIN = 'db.foo.com';
@@ -28,37 +36,36 @@ var RECORD = {
         }
 };
 
-var server;
-var zk;
-var zkCache;
+
 
 ///--- Tests
 
-test('setup', function (t) {
+before(function (callback) {
+        var self = this;
+
         var funcs = [
                 function setup(_, cb) {
                         helper.createServer(function (err, res) {
                                 if (err) {
                                         cb(err);
-                                        t.error(err);
                                 } else {
-                                        server = res.server;
-                                        zk = res.zk;
-                                        zkCache = res.zkCache;
+                                        self.server = res.server;
+                                        self.zk = res.zk;
+                                        self.zkCache = res.zkCache;
                                         cb();
                                 }
                         });
                 },
 
                 function mkdir(_, cb) {
-                        helper.zkMkdirP.call(zk, PATH, cb);
+                        helper.zkMkdirP.call(self.zk, PATH, cb);
                 },
 
                 function setRecord(_, cb) {
                         var data = new Buffer(JSON.stringify(RECORD));
-                        zk.create(PATH, data, {}, function (err) {
+                        self.zk.create(PATH, data, {}, function (err) {
                                 if (err && err.code === 'NODE_EXISTS') {
-                                        zk.set(PATH, data, -1, cb);
+                                        self.zk.set(PATH, data, -1, cb);
                                 } else {
                                         cb();
                                 }
@@ -69,10 +76,22 @@ test('setup', function (t) {
         vasync.pipeline({funcs: funcs}, function (err) {
                 if (err) {
                         console.error(err.stack);
-                        t.error(err);
                         process.exit(1);
                 }
-                t.end();
+
+                callback();
+        });
+});
+
+
+after(function (callback) {
+        var self = this;
+        helper.zkRmr.call(this.zk, '/com', function (err) {
+                self.zk.on('close', function () {
+                        self.server.stop(callback);
+                });
+                self.zkCache.stop();
+                self.zk.close();
         });
 });
 
@@ -89,17 +108,6 @@ test('resolve record ok', function (t) {
                         type: 'A',
                         target: '192.168.0.1'
                 });
-                t.end();
-        });
-});
-
-test('teardown', function (t) {
-        helper.zkRmr.call(zk, '/com', function (err) {
-                zk.on('close', function (cb) {
-                        server.stop(cb);
-                });
-                zkCache.stop();
-                zk.close();
                 t.end();
         });
 });

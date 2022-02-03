@@ -15,6 +15,4 @@ core
 obj/
 balancer
 smf_adjust
-/.nyc_output
-/test.tap
 zklog

@@ -1,0 +1,123 @@
+#!/bin/bash
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+
+#
+# Copyright (c) 2019, Joyent, Inc.
+#
+
+#
+# Run the binders tests. This is meant to be called from within a Triton
+# binder zone, e.g.:
+#       sdc-login -l binder0
+#       /opt/smartdc/binder/test/runtests
+#
+# Run `./runtests -h` for usage info.
+#
+
+if [ "$TRACE" != "" ]; then
+    export PS4='${BASH_SOURCE}:${LINENO}: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+    set -o xtrace
+fi
+set -o errexit
+set -o pipefail
+
+LOG=/var/tmp/bindertest.log
+
+
+#---- guard
+
+if [[ ! -f "/lib/sdc/.sdc-test-no-production-data" ]]; then
+    cat <<EOF
+To run this test you must create the file:
+
+    /lib/sdc/.sdc-test-no-production-data
+
+after ensuring you have no production data on this SDC.
+
+Also, make sure that the sapi and imgapi zones have external nics.  See the
+README for more detail.
+EOF
+    exit 2
+fi
+
+
+#---- support functions
+
+function fatal
+{
+    echo "$(basename $0): fatal error: $*"
+    exit 1
+}
+
+function usage
+{
+    echo "Usage:"
+    echo "  runtests [OPTIONS...]"
+    echo ""
+    echo "Options:"
+    echo "  -f FILTER    Filter pattern for test files to run."
+    echo "  -r REPORTER  Nodeunit reporter to use. Defaults to 'tap'."
+}
+
+function cleanup () {
+    local status=$?
+    if [[ $status -ne 0 ]]; then
+        echo "error $status (log at '$LOG', run 'TRACE=1 $0' for more info)" >&2
+    fi
+}
+
+
+
+#---- mainline
+
+trap 'cleanup' EXIT
+
+TOP=$(cd $(dirname $0)/../; pwd)
+
+# Options.
+opt_reporter=tap
+opt_test_pattern=
+while getopts "hr:f:" opt
+do
+    case "$opt" in
+        h)
+            usage
+            exit 0
+            ;;
+        f)
+            opt_test_pattern="$OPTARG"
+            ;;
+        r)
+            opt_reporter=$OPTARG
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+# Setup a clean output dir.
+OUTPUT_DIR=/var/tmp/bindertest
+echo "# Setup a clean output dir ($OUTPUT_DIR)."
+rm -rf $OUTPUT_DIR
+mkdir -p $OUTPUT_DIR
+
+cd ${TOP}
+
+test_files=$(ls -1 test/*.test.js)
+if [[ -n "$opt_test_pattern" ]]; then
+    test_files=$(echo "$test_files" | grep "$opt_test_pattern" || true)
+    echo "# Running filtered set of test files: $test_files"
+fi
+
+# Currently binder's test files write Bunyan logs to stderr. We pipe those
+# to a file to not interfere with reading the test output.
+echo "# Test log at $LOG"
+./build/node/bin/node ./node_modules/.bin/nodeunit \
+    --reporter=$opt_reporter \
+    ${test_files}  2>$LOG | tee $OUTPUT_DIR/binder.tap
