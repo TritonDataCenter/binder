@@ -14,8 +14,7 @@ NAME = binder
 # Files
 #
 JS_FILES :=		$(shell ls *.js) $(shell find lib test -name '*.js')
-JSL_CONF_NODE =		tools/jsl.node.conf
-JSL_FILES_NODE =	$(JS_FILES)
+ESLINT_FILES   = $(JS_FILES)
 JSSTYLE_FILES =		$(JS_FILES)
 JSSTYLE_FLAGS =		-f tools/jsstyle.conf
 SMF_MANIFESTS_IN =	smf/manifests/single-binder.xml.in \
@@ -33,9 +32,11 @@ ENGBLD_REQUIRE := $(shell git submodule update --init deps/eng)
 include ./deps/eng/tools/mk/Makefile.defs
 TOP ?= $(error Unable to access eng.git submodule Makefiles.)
 
+BUILD_PLATFORM = 20210826T002459Z
+
 ifeq ($(shell uname -s),SunOS)
-        # minimal-64-lts@19.4.0
-        NODE_PREBUILT_IMAGE=5417ab20-3156-11ea-8b19-2b66f5e7a439
+        # minimal-64-lts@21.4.0
+        NODE_PREBUILT_IMAGE=a7199134-7e94-11ec-be67-db6f482136c2
         NODE_PREBUILT_VERSION=v6.17.1
         NODE_PREBUILT_TAG=zone64
         include ./deps/eng/tools/mk/Makefile.node_prebuilt.defs
@@ -67,11 +68,11 @@ RELSTAGEDIR :=		/tmp/$(NAME)-$(STAMP)
 PKGSRC_PREFIX =		opt/local
 JRE_LICENSE_COOKIE =	.dlj_license_accepted
 
-# triton-origin-x86_64-19.4.0
-BASE_IMAGE_UUID = 59ba2e5e-976f-4e09-8aac-a4a7ef0395f5
+# triton-origin-x86_64-21.4.0
+BASE_IMAGE_UUID = 502eeef2-8267-489f-b19c-a206906f57ef
 BUILDIMAGE_NAME =	mantav2-nameservice
 BUILDIMAGE_DESC =	Manta nameservice
-BUILDIMAGE_PKGSRC =	openjdk8-1.8.232 \
+BUILDIMAGE_PKGSRC =	openjdk8-1.8.292nb3 \
 			zookeeper-3.4.12
 AGENTS =		amon config registrar
 
