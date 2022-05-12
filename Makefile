@@ -73,7 +73,8 @@ BASE_IMAGE_UUID = 502eeef2-8267-489f-b19c-a206906f57ef
 BUILDIMAGE_NAME =	mantav2-nameservice
 BUILDIMAGE_DESC =	Manta nameservice
 BUILDIMAGE_PKGSRC =	openjdk8-1.8.292nb3 \
-			zookeeper-3.4.12
+			zookeeper-3.4.12 \
+			gtar-base-1.34
 AGENTS =		amon config registrar
 
 #
