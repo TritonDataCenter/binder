@@ -1,8 +1,8 @@
 {
   "name": "binder",
   "description": "Triton Data Center internal DNS service",
-  "version": "1.4.1",
-  "author": "Joyent (joyent.com)",
+  "version": "1.4.2",
+  "author": "MNX Cloud (mnx.io)",
   "license": "MPL-2.0",
   "private": true,
   "dependencies": {
