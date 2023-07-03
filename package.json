@@ -18,7 +18,7 @@
     "posix-getopt": "1.0.0",
     "restify": "4.3.2",
     "triton-metrics": "0.1.1",
-    "ufds": "^1.7.1",
+    "ufds": "~1.7.1",
     "vasync": "2.1.0",
     "verror": "^1.10.0",
     "xtend": "1.0.3",

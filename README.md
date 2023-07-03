@@ -6,26 +6,27 @@
 
 <!--
     Copyright 2019 Joyent, Inc.
+    Copyright 2023 MNX Cloud, Inc.
 -->
 
 # Binder
 
-This repository is part of the Joyent Triton and Manta projects.
+This repository is part of the Triton DataCenter and Manta projects.
 For contribution guidelines, issues, and general documentation, visit the main
-[Triton](http://github.com/joyent/triton) and
-[Manta](http://github.com/joyent/manta) project pages.
+[Triton](http://github.com/TritonDataCenter/triton) and
+[Manta](http://github.com/TritonDataCenter/manta) project pages.
 
 This repo contains Binder, which is a DNS server implemented on top of
-ZooKeeper.  Hosts use [Registrar](http://github.com/joyent/registrar) to
-register themselves into DNS.  **Binder's behavior, use in service discovery,
+ZooKeeper.  Hosts use [Registrar](http://github.com/TritonDataCenter/registrar)
+to register themselves into DNS.  **Binder's behavior, use in service discovery,
 and the ZooKeeper record format are described in the Registrar documentation.**
 
 ## Active Branches
 
 There are currently two active branches of this repository, for the two
 active major versions of Manta. See the [mantav2 overview
-document](https://github.com/joyent/manta/blob/master/docs/mantav2.md) for
-details on major Manta versions.
+document](https://github.com/TritonDataCenter/manta/blob/master/docs/mantav2.md)
+for details on major Manta versions.
 
 - [`master`](../../tree/master/) - For development of mantav2, the latest
   version of Manta. This is the version used by Triton.
@@ -51,7 +52,7 @@ and add `-d 2` to spew all nature of logs via SMF.
 
 To run the binder server:
 
-    git clone git@github.com:joyent/binder.git
+    git clone git@github.com:TritonDataCenter/binder.git
     cd binder
     git submodule update --init
     make all
