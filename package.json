@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "expiring-lru-cache": "2.1.0",
-    "ejs": "2.7.2",
+    "ejs": "3.1.7",
     "nodeunit": "0.11.2",
     "node-zookeeper-client": "0.2.2"
   },
